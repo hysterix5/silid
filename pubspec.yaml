@@ -1,0 +1,25 @@
+name: silid
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  cloud_firestore: ^5.6.5
+  firebase_auth: ^5.5.1
+  firebase_core: ^3.12.1
+  flutter:
+    sdk: flutter
+  get: ^4.7.2
+  google_identity_services_web: ^0.3.3
+  google_sign_in: ^6.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

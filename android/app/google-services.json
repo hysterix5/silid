@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "16804108720",
+    "project_id": "silid-b01f6",
+    "storage_bucket": "silid-b01f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16804108720:android:56a7a6b4a5336a0c2c9e75",
+        "android_client_info": {
+          "package_name": "com.example.silid"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCk7LvvGEIkMcrm3PnARPoxiq2sAL2okyI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
