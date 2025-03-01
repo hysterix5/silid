@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:silid/core/resources/auth/register.dart';
 import 'package:silid/core/resources/controllers/auth_controller.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
 import 'package:silid/core/utility/theme/colors.dart';
@@ -153,7 +154,7 @@ class LoginPage extends StatelessWidget {
                               ),
                             ),
                             InkWell(
-                              onTap: () {},
+                              onTap: () => Get.to(() => const RegisterPage()),
                               child: Text(
                                 'Sign up',
                                 style: TextStyle(

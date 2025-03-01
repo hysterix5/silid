@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'dart:js' as js;
 import 'dart:html' as html;
@@ -24,7 +26,7 @@ class _MeetingScreenState extends State<MeetingScreen> {
         js.context
             .callMethod('initializeDaily', [widget.roomUrl, widget.userName]);
       } catch (e) {
-        print("Error calling initializeDaily: $e");
+        debugPrint("Error calling initializeDaily: $e");
       }
     });
 
@@ -32,7 +34,7 @@ class _MeetingScreenState extends State<MeetingScreen> {
     html.window.onMessage.listen((event) {
       if (event.data is String) {
         final String data = event.data;
-        print("Received event from Daily: $data");
+        debugPrint("Received event from Daily: $data");
 
         if (data.contains('"type":"left-meeting"')) {
           _handleParticipantLeft();
@@ -44,14 +46,14 @@ class _MeetingScreenState extends State<MeetingScreen> {
   }
 
   void _handleParticipantLeft() {
-    print("A participant has left.");
+    debugPrint("A participant has left.");
     if (mounted) {
       Navigator.pop(context); // ✅ Pop the screen when user leaves
     }
   }
 
   void _handleMeetingEnded() {
-    print("The meeting has ended.");
+    debugPrint("The meeting has ended.");
     if (mounted) {
       Navigator.pop(context); // ✅ Pop the screen when meeting ends
     }
@@ -59,6 +61,6 @@ class _MeetingScreenState extends State<MeetingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return const Scaffold();
   }
 }

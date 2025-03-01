@@ -45,7 +45,21 @@ class BookingController extends GetxController {
     }
   }
 
-  Future<void> fetchBookings({String? studentName, String? teacherName}) async {
+  Future<void> fetchAllBookings() async {
+    try {
+      isLoading.value = true;
+      QuerySnapshot querySnapshot =
+          await _firestore.collection('bookings').get();
+      bookings.value =
+          querySnapshot.docs.map((doc) => Bookings.fromFirestore(doc)).toList();
+    } catch (e) {
+      Get.snackbar("Error", "Failed to load bookings: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  void fetchBookings({String? studentName, String? teacherName}) {
     try {
       isLoading.value = true;
 
@@ -58,18 +72,59 @@ class BookingController extends GetxController {
         query = query.where('teacher', isEqualTo: teacherName);
       }
 
-      QuerySnapshot bookingSnapshot = await query.get();
+      // Listen for real-time changes instead of fetching once
+      query.snapshots().listen((snapshot) {
+        bookings.value =
+            snapshot.docs.map((doc) => Bookings.fromFirestore(doc)).toList();
 
-      bookings.value = bookingSnapshot.docs
-          .map((doc) => Bookings.fromFirestore(doc))
-          .toList();
-
-      isLoading.value = false;
-
-      update(); // 🚀 Force UI update after fetching data
+        isLoading.value = false;
+        update(); // 🚀 Ensure UI updates automatically
+      }, onError: (error) {
+        isLoading.value = false;
+        Get.snackbar("Error", "Failed to fetch bookings: $error");
+      });
     } catch (e) {
       isLoading.value = false;
       Get.snackbar("Error", "Failed to fetch bookings: $e");
+    }
+  }
+
+  void cancelBooking(String remarks, String bookingId) async {
+    if (remarks.isNotEmpty) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('bookings')
+            .doc(bookingId)
+            .update({
+          'status': {
+            'message': 'Cancelled',
+            'remarks': remarks,
+          },
+        });
+
+        Get.snackbar("Success", "Booking canceled successfully.");
+      } catch (e) {
+        Get.snackbar("Error", "Failed to cancel booking: $e");
+      }
+    } else {
+      Get.snackbar("Error", "Please provide a cancellation reason.");
+    }
+  }
+
+  void finishBooking(String bookingId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('bookings')
+          .doc(bookingId)
+          .update({
+        'status': {
+          'message': 'Finished',
+          'remarks': '',
+        },
+      });
+      Get.snackbar("Success", "Booking finished.");
+    } catch (e) {
+      Get.snackbar("Error", "Failed to finish booking: $e");
     }
   }
 }

@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
+import 'package:silid/core/views/admin/index.dart';
 import 'package:silid/core/views/newcomer/index.dart';
 import 'package:silid/core/views/student/index.dart';
 import 'package:silid/core/views/teacher/index.dart';
@@ -55,7 +55,7 @@ class DataController extends GetxController {
       }
 
       if (adminDoc.exists) {
-        // Navigate to Admin Page (Add actual navigation here)
+        Get.off(() => const AdminPage());
         return;
       }
 
@@ -67,7 +67,7 @@ class DataController extends GetxController {
           "uid": user?.uid,
         });
 
-        // Navigate to Admin Page (Add actual navigation here)
+        Get.off(() => const AdminPage());
         return;
       }
 
@@ -75,25 +75,6 @@ class DataController extends GetxController {
       Get.to(() => const Newcomer());
     } catch (e) {
       Get.snackbar('Error', 'An error occurred: ${e.toString()}');
-    }
-  }
-
-  void fetchTeachers() async {
-    try {
-      isLoading(true);
-
-      var snapshot = await _firestore.collection('teachers').get();
-
-      if (snapshot.docs.isEmpty) {
-        Get.snackbar("Error", "No teachers found.");
-      }
-      teachers.value =
-          snapshot.docs.map((doc) => Teacher.fromFirestore(doc)).toList();
-    } catch (e) {
-      debugPrint("Error fetching teachers: $e");
-      Get.snackbar("Error", "Failed to fetch teachers: $e");
-    } finally {
-      isLoading(false);
     }
   }
 

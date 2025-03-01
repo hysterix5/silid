@@ -199,4 +199,66 @@ class ShowDialogUtil {
       barrierDismissible: true, // Allow dismissing by tapping outside
     );
   }
+
+  static void showCancellationDialog({
+    required String title,
+    required String message,
+    required Function(String) onConfirm,
+  }) {
+    TextEditingController reasonController = TextEditingController();
+
+    Get.dialog(
+      Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                message,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: reasonController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: "Enter reason for cancellation",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Get.back(),
+                    child: const Text("Close"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      onConfirm(reasonController.text);
+                      Get.back();
+                    },
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text("Cancel Booking"),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      barrierDismissible: true, // Allow dismissing by tapping outside
+    );
+  }
 }

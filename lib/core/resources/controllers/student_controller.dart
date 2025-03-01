@@ -5,6 +5,8 @@ import 'package:silid/core/resources/models/student.dart';
 class StudentController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Rx<Student?> student = Rx<Student?>(null);
+  RxList<Student> students = <Student>[].obs;
+  RxBool isLoading = false.obs;
 
   Future<void> submitStudentData(Student student) async {
     try {
@@ -30,6 +32,20 @@ class StudentController extends GetxController {
       return null;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  Future<void> fetchStudents() async {
+    try {
+      isLoading.value = true;
+      QuerySnapshot querySnapshot =
+          await _firestore.collection('students').get();
+      students.value =
+          querySnapshot.docs.map((doc) => Student.fromFirestore(doc)).toList();
+    } catch (e) {
+      Get.snackbar("Error", "Failed to load students: $e");
+    } finally {
+      isLoading.value = false;
     }
   }
 }

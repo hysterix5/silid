@@ -42,6 +42,20 @@ class AuthController extends GetxController {
     }
   }
 
+  Future<UserCredential> createUserWithEmailAndPassword(
+      String email, String password) async {
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      return userCredential;
+    } on FirebaseAuthException catch (e) {
+      throw Exception('Failed to register: ${e.message}');
+    }
+  }
+
   bool isSigningIn = false; // Add this flag
   Future<void> signInWithGoogle() async {
     if (isSigningIn) return; // Prevent duplicate calls

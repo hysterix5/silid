@@ -25,7 +25,14 @@ class Navbar extends StatelessWidget {
             accountName: Text(name!, style: const TextStyle(fontSize: 18)),
             accountEmail: Text(email!),
             currentAccountPicture: CircleAvatar(
-              backgroundImage: NetworkImage(profileImageUrl!),
+              backgroundColor:
+                  Colors.grey[300], // Optional background color for the icon
+              backgroundImage: profileImageUrl != null
+                  ? NetworkImage(profileImageUrl!)
+                  : null,
+              child: profileImageUrl == null
+                  ? const Icon(Icons.person, size: 40, color: Colors.black54)
+                  : null,
             ),
             decoration: const BoxDecoration(color: Colors.blue),
           ),

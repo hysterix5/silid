@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:silid/core/resources/models/teacher.dart';
 
 class TeacherController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Rx<Teacher?> teacher = Rx<Teacher?>(null);
+  var teachers = <Teacher>[].obs;
+  var isLoading = true.obs;
 
   Future<void> submitTeacherData(Teacher teacher) async {
     try {
@@ -30,6 +33,25 @@ class TeacherController extends GetxController {
       return null;
     } catch (e) {
       rethrow;
+    }
+  }
+
+  void fetchTeachers() async {
+    try {
+      isLoading(true);
+
+      var snapshot = await _firestore.collection('teachers').get();
+
+      if (snapshot.docs.isEmpty) {
+        Get.snackbar("Error", "No teachers found.");
+      }
+      teachers.value =
+          snapshot.docs.map((doc) => Teacher.fromFirestore(doc)).toList();
+    } catch (e) {
+      debugPrint("Error fetching teachers: $e");
+      Get.snackbar("Error", "Failed to fetch teachers: $e");
+    } finally {
+      isLoading(false);
     }
   }
 }
