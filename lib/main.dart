@@ -1,11 +1,27 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:silid/core/resources/auth/login.dart';
+import 'package:silid/core/resources/controllers/auth_controller.dart';
+import 'package:silid/core/resources/controllers/booking_controller.dart';
+import 'package:silid/core/resources/controllers/daily_controller.dart';
+import 'package:silid/core/resources/controllers/data_controller.dart';
+import 'package:silid/core/resources/controllers/student_controller.dart';
+import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/firebase_options.dart';
 
 Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  Get.put(AuthController());
+  Get.put(DataController());
+  Get.put(TeacherController());
+  Get.put(StudentController());
+  Get.put(BookingController());
+  Get.put(DailyController());
+
   runApp(const MainApp());
 }
 
@@ -14,12 +30,30 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return const GetMaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: AuthWrapper(),
     );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final user = Get.find<AuthController>().currentUser.value;
+      if (user == null) {
+        return LoginPage();
+      }
+
+      // Ensure navigation happens only once after user logs in
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.find<DataController>().checkUserAndNavigate(user.uid);
+      });
+
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    });
   }
 }
