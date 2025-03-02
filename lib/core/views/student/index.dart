@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/service/daily.dart';
-import 'package:silid/core/utility/theme/colors.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/views/student/teacher_list.dart';
@@ -71,7 +70,7 @@ class _StudentIndexState extends State<StudentIndex> {
         return Navbar(
           name: student?.name,
           email: student?.email,
-          profileImageUrl: user?.photoURL,
+          profileImageUrl: student?.profileImage,
         );
       }),
       body: Padding(
@@ -84,19 +83,8 @@ class _StudentIndexState extends State<StudentIndex> {
                 Container(
                   padding: const EdgeInsets.all(20.0),
                   decoration: BoxDecoration(
-                    color: AppColors
-                        .tertiary, // Background color for the container
                     borderRadius:
                         BorderRadius.circular(12.0), // Rounded corners
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black
-                            .withOpacity(0.1), // Shadow color with opacity
-                        blurRadius: 10, // Shadow blur radius
-                        offset: const Offset(
-                            0, 4), // Shadow offset (horizontal, vertical)
-                      ),
-                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +93,6 @@ class _StudentIndexState extends State<StudentIndex> {
                         "Today is",
                         style: TextStyle(
                           fontSize: 18, // Make the "Today is" text larger
-                          color: Colors.black, // Set color as per your theme
                         ),
                       ),
 
@@ -116,7 +103,6 @@ class _StudentIndexState extends State<StudentIndex> {
                         style: const TextStyle(
                           fontSize: 32, // Make the date text larger
                           fontWeight: FontWeight.bold,
-                          color: Colors.black, // Set color as per your theme
                         ),
                       ),
                       GetBuilder<BookingController>(
@@ -147,8 +133,6 @@ class _StudentIndexState extends State<StudentIndex> {
                               }).toList();
                             },
                             calendarStyle: const CalendarStyle(
-                              defaultTextStyle: TextStyle(color: Colors.black),
-                              todayTextStyle: TextStyle(color: Colors.white),
                               todayDecoration: BoxDecoration(
                                 color: Colors.blue, // Highlight today's date
                                 shape: BoxShape.circle,

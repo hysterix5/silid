@@ -8,6 +8,8 @@ import 'package:silid/core/resources/controllers/daily_controller.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
+import 'package:silid/core/utility/theme/colors.dart';
+import 'package:silid/core/utility/theme/controllers/theme_controller.dart';
 import 'package:silid/firebase_options.dart';
 
 Future<void> main() async {
@@ -21,7 +23,7 @@ Future<void> main() async {
   Get.put(StudentController());
   Get.put(BookingController());
   Get.put(DailyController());
-
+  Get.put(ThemeController());
   runApp(const MainApp());
 }
 
@@ -30,9 +32,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const GetMaterialApp(
+    return GetMaterialApp(
+      theme: AppColors.lightTheme, // Light Mode Theme
+      darkTheme: AppColors.darkTheme, // Dark Mode Theme
+      themeMode: ThemeMode.system, // Follows system settings
+
       debugShowCheckedModeBanner: false,
-      home: AuthWrapper(),
+      home: const AuthWrapper(),
     );
   }
 }

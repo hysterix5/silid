@@ -6,7 +6,6 @@ import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
 import 'package:silid/core/resources/models/student.dart';
-import 'package:silid/core/utility/theme/colors.dart';
 
 class TeacherForm extends StatefulWidget {
   const TeacherForm({super.key});
@@ -29,11 +28,8 @@ class _TeacherFormState extends State<TeacherForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
       appBar: AppBar(
         title: const Text('Basic Info'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.accent,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -57,12 +53,11 @@ class _TeacherFormState extends State<TeacherForm> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Enter Your Information',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -73,13 +68,8 @@ class _TeacherFormState extends State<TeacherForm> {
                     controller: firstNameController,
                     decoration: InputDecoration(
                       labelText: 'First Name',
-                      labelStyle: TextStyle(color: AppColors.primary),
-                      floatingLabelStyle: TextStyle(
-                        color: AppColors.tertiary,
-                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide(color: AppColors.primary),
                       ),
                     ),
                     validator: (value) => value!.trim().isEmpty
@@ -93,13 +83,8 @@ class _TeacherFormState extends State<TeacherForm> {
                     controller: lastNameController,
                     decoration: InputDecoration(
                       labelText: 'Last Name',
-                      labelStyle: TextStyle(color: AppColors.primary),
-                      floatingLabelStyle: TextStyle(
-                        color: AppColors.primary,
-                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide(color: AppColors.primary),
                       ),
                     ),
                     validator: (value) => value!.trim().isEmpty
@@ -122,6 +107,7 @@ class _TeacherFormState extends State<TeacherForm> {
                           name:
                               '${firstNameController.text} ${lastNameController.text}',
                           email: user!.email!,
+                          profileImage: '',
                         );
                         await teacherController.submitTeacherData(teacher);
                       } finally {
@@ -132,16 +118,14 @@ class _TeacherFormState extends State<TeacherForm> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.tertiary,
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(
                             color: Colors.white,
                           )
-                        : Text(
+                        : const Text(
                             'Submit',
-                            style: TextStyle(color: AppColors.accent),
                           ),
                   ),
                 ],
@@ -183,11 +167,8 @@ class _StudentFormState extends State<StudentForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
       appBar: AppBar(
         title: const Text('Basic Info'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.accent,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -211,12 +192,11 @@ class _StudentFormState extends State<StudentForm> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
+                  const Text(
                     'Enter Your Information',
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -227,13 +207,8 @@ class _StudentFormState extends State<StudentForm> {
                     controller: firstNameController,
                     decoration: InputDecoration(
                       labelText: 'First Name',
-                      labelStyle: TextStyle(color: AppColors.primary),
-                      floatingLabelStyle: TextStyle(
-                        color: AppColors.tertiary,
-                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide(color: AppColors.primary),
                       ),
                     ),
                     validator: (value) => value!.trim().isEmpty
@@ -247,13 +222,8 @@ class _StudentFormState extends State<StudentForm> {
                     controller: lastNameController,
                     decoration: InputDecoration(
                       labelText: 'Last Name',
-                      labelStyle: TextStyle(color: AppColors.primary),
-                      floatingLabelStyle: TextStyle(
-                        color: AppColors.primary,
-                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12.0),
-                        borderSide: BorderSide(color: AppColors.primary),
                       ),
                     ),
                     validator: (value) => value!.trim().isEmpty
@@ -276,6 +246,7 @@ class _StudentFormState extends State<StudentForm> {
                           name:
                               '${firstNameController.text} ${lastNameController.text}',
                           email: user!.email!,
+                          profileImage: '',
                         );
                         await studentController.submitStudentData(student);
                       } finally {
@@ -287,16 +258,14 @@ class _StudentFormState extends State<StudentForm> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.tertiary,
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: _isLoading
                         ? const CircularProgressIndicator(
                             color: Colors.white,
                           )
-                        : Text(
+                        : const Text(
                             'Submit',
-                            style: TextStyle(color: AppColors.accent),
                           ),
                   ),
                 ],

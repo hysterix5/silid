@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 import 'package:silid/core/views/admin/index.dart';
 import 'package:silid/core/views/newcomer/index.dart';
 import 'package:silid/core/views/student/index.dart';
@@ -74,7 +75,7 @@ class DataController extends GetxController {
       // If no role found, navigate to Newcomer page
       Get.to(() => const Newcomer());
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred: ${e.toString()}');
+      SnackbarWidget.showError("An error occured $e");
     }
   }
 
@@ -96,7 +97,7 @@ class DataController extends GetxController {
         };
       }).toList();
     } catch (e) {
-      Get.snackbar("Error", "Failed to fetch schedules: $e");
+      SnackbarWidget.showError("Failed to fetch schedules $e");
     } finally {
       isLoading.value = false;
     }
@@ -128,7 +129,7 @@ class DataController extends GetxController {
       schedules[scheduleIndex]['timeslots'] = timeslots;
       schedules.refresh(); // 🔥 UI updates automatically
     } catch (e) {
-      Get.snackbar("Error", "Failed to update timeslot: $e");
+      SnackbarWidget.showError("Failed to update timeslot $e");
     }
   }
 }

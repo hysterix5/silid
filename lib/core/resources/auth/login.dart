@@ -3,7 +3,8 @@ import 'package:get/get.dart';
 import 'package:silid/core/resources/auth/register.dart';
 import 'package:silid/core/resources/controllers/auth_controller.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
-import 'package:silid/core/utility/theme/colors.dart';
+import 'package:silid/core/utility/theme/controllers/theme_controller.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController emailController = TextEditingController();
@@ -11,13 +12,27 @@ class LoginPage extends StatelessWidget {
   final AuthController authController = Get.put(AuthController());
 
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+  final ThemeController themeController = Get.find<ThemeController>();
 
   LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      appBar: AppBar(
+        actions: [
+          Icon(themeController.isDarkMode.value
+              ? Icons.dark_mode
+              : Icons.light_mode),
+          const Text("Dark Mode"),
+          Switch(
+            value: themeController.isDarkMode.value,
+            onChanged: (value) {
+              themeController.toggleTheme();
+            },
+          ),
+        ],
+      ),
       body: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -28,25 +43,24 @@ class LoginPage extends StatelessWidget {
               width: 400.0,
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: AppColors.primary,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.white,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
+                border: Border.all(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primary, // Border color from theme
+                  width: 2.0, // Border thickness
+                ),
+                borderRadius:
+                    BorderRadius.circular(8.0), // Optional: rounded corners
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
+                  const Text(
                     'Welcome!',
                     style: TextStyle(
                       fontSize: 28.0,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.accent,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -59,18 +73,18 @@ class LoginPage extends StatelessWidget {
                           controller: emailController,
                           decoration: InputDecoration(
                             labelText: "Email",
-                            labelStyle: TextStyle(
-                              color: AppColors.accent,
-                            ),
+                            labelStyle: const TextStyle(),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
                               borderSide: BorderSide(
-                                color: AppColors.accent,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary, // Adjusts with theme
+                                width: 2.0,
                               ),
                             ),
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.email,
-                              color: AppColors.accent,
                             ),
                           ),
                           keyboardType: TextInputType.emailAddress,
@@ -82,18 +96,18 @@ class LoginPage extends StatelessWidget {
                           controller: passwordController,
                           decoration: InputDecoration(
                             labelText: "Password",
-                            labelStyle: TextStyle(
-                              color: AppColors.accent,
-                            ),
+                            labelStyle: const TextStyle(),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
                               borderSide: BorderSide(
-                                color: AppColors.accent,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary, // Adjusts with theme
+                                width: 2.0,
                               ),
                             ),
-                            prefixIcon: Icon(
+                            prefixIcon: const Icon(
                               Icons.lock,
-                              color: AppColors.accent,
                             ),
                           ),
                           obscureText: true,
@@ -119,26 +133,19 @@ class LoginPage extends StatelessWidget {
                                 vertical: 14.0,
                               ),
                               side: BorderSide(
-                                color: AppColors.accent,
+                                color: Theme.of(context).colorScheme.primary,
                                 width: 2,
                               ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12.0),
                               ),
                               minimumSize: const Size(double.infinity, 48),
-                              foregroundColor: AppColors.accent,
                             ),
                             child: authController.isLoading.value
-                                ? CircularProgressIndicator(
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppColors.tertiary,
-                                    ),
-                                  )
-                                : Text(
+                                ? const CircularProgressIndicator()
+                                : const Text(
                                     "Sign in with Email",
-                                    style: TextStyle(
-                                      color: AppColors.accent,
-                                    ),
+                                    style: TextStyle(),
                                   ),
                           ),
                         ),
@@ -146,32 +153,29 @@ class LoginPage extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               'Don’t have an account? ',
                               style: TextStyle(
                                 fontSize: 12.0,
-                                color: AppColors.accent,
                               ),
                             ),
                             InkWell(
                               onTap: () => Get.to(() => const RegisterPage()),
-                              child: Text(
+                              child: const Text(
                                 'Sign up',
                                 style: TextStyle(
                                   fontSize: 12.0,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.accent,
                                 ),
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 30.0),
-                        Text(
+                        const Text(
                           "Or",
                           style: TextStyle(
                             fontSize: 16,
-                            color: AppColors.accent,
                           ),
                         ),
                       ],
@@ -192,18 +196,12 @@ class LoginPage extends StatelessWidget {
                         if (userId != null) {
                           dataController.checkUserAndNavigate(userId);
                         } else {
-                          Get.snackbar(
-                            'Error',
-                            'Google Sign-in failed. Please try again.',
-                            snackPosition: SnackPosition.BOTTOM,
-                          );
+                          SnackbarWidget.showError(
+                              'Google Sign-in failed: Please try again.');
                         }
                       } catch (e) {
-                        Get.snackbar(
-                          'Error',
-                          'Google Sign-in failed: ${e.toString()}',
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
+                        SnackbarWidget.showError(
+                            'Google Sign-in failed: ${e.toString()}');
                       }
                     },
                     style: OutlinedButton.styleFrom(
@@ -212,13 +210,12 @@ class LoginPage extends StatelessWidget {
                         horizontal: 24.0,
                       ),
                       side: BorderSide(
-                        color: AppColors.accent,
+                        color: Theme.of(context).colorScheme.primary,
                         width: 2,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12.0),
                       ),
-                      backgroundColor: AppColors.tertiary,
                       minimumSize: const Size(double.infinity, 60),
                     ),
                     child: Row(
@@ -230,10 +227,9 @@ class LoginPage extends StatelessWidget {
                           width: 24.0,
                         ),
                         const SizedBox(width: 10.0),
-                        Text(
+                        const Text(
                           "Sign in with Google",
                           style: TextStyle(
-                            color: AppColors.accent,
                             fontSize: 18.0,
                           ),
                         ),

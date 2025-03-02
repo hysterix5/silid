@@ -6,6 +6,7 @@ import 'package:silid/core/resources/controllers/booking_controller.dart';
 import 'package:silid/core/resources/controllers/daily_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
 
@@ -213,9 +214,9 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                                     roomUrl, // ✅ Pass generated meeting link
                                                               );
                                                             } else {
-                                                              Get.snackbar(
-                                                                  "Error",
-                                                                  "Failed to create a meeting link.");
+                                                              SnackbarWidget
+                                                                  .showError(
+                                                                      "Failed to create meeting link.");
                                                             }
 
                                                             dataController
@@ -225,9 +226,9 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                             dataController
                                                                 .isLoading
                                                                 .value = false;
-                                                            Get.snackbar(
-                                                                "Error",
-                                                                "Failed to book: $e");
+                                                            SnackbarWidget
+                                                                .showError(
+                                                                    "Failed to book $e");
                                                           }
                                                         });
                                               },

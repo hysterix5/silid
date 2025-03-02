@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:silid/core/resources/models/student.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 
 class StudentController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -43,7 +44,7 @@ class StudentController extends GetxController {
       students.value =
           querySnapshot.docs.map((doc) => Student.fromFirestore(doc)).toList();
     } catch (e) {
-      Get.snackbar("Error", "Failed to load students: $e");
+      SnackbarWidget.showError("Failed to load students $e");
     } finally {
       isLoading.value = false;
     }

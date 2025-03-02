@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:silid/core/resources/models/teacher.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 
 class TeacherController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -43,13 +44,13 @@ class TeacherController extends GetxController {
       var snapshot = await _firestore.collection('teachers').get();
 
       if (snapshot.docs.isEmpty) {
-        Get.snackbar("Error", "No teachers found.");
+        SnackbarWidget.showError("No teachers found");
       }
       teachers.value =
           snapshot.docs.map((doc) => Teacher.fromFirestore(doc)).toList();
     } catch (e) {
       debugPrint("Error fetching teachers: $e");
-      Get.snackbar("Error", "Failed to fetch teachers: $e");
+      SnackbarWidget.showError("Failed to fetch teachers $e");
     } finally {
       isLoading(false);
     }

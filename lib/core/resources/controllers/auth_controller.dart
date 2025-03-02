@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:silid/core/resources/auth/login.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 
 class AuthController extends GetxController {
   var isLoading = false.obs;
@@ -36,7 +37,7 @@ class AuthController extends GetxController {
         Get.find<DataController>().checkUserAndNavigate(userId);
       }
     } catch (e) {
-      Get.snackbar('Error', 'Sign-in failed: ${e.toString()}');
+      SnackbarWidget.showError('Sign in failed $e');
     } finally {
       isLoading.value = false;
     }
@@ -91,7 +92,7 @@ class AuthController extends GetxController {
       }
     } catch (e) {
       debugPrint(e.toString());
-      Get.snackbar('Error', 'Google Sign-In failed: ${e.toString()}');
+      SnackbarWidget.showError('Google Sign in failed $e');
     } finally {
       isSigningIn = false;
     }
@@ -106,7 +107,7 @@ class AuthController extends GetxController {
       // Navigate back to LoginPage and remove all previous routes
       Get.offAll(() => LoginPage());
     } catch (e) {
-      Get.snackbar('Error', 'Logout failed: ${e.toString()}');
+      SnackbarWidget.showError('Log out failed $e');
     }
   }
 

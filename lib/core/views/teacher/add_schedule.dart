@@ -3,7 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:silid/core/utility/theme/colors.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -252,9 +252,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
         markedDatesWithTimes.remove(date); // Remove from UI
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Schedule deleted successfully")),
-      );
+      SnackbarWidget.showSuccess("Schedule Deleted Successfully");
 
       // Check if there are any schedules remaining in the subcollection
       final remainingSchedules = await FirebaseFirestore.instance
@@ -267,9 +265,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
         // If there are no schedules left, show a message or handle accordingly
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
+      SnackbarWidget.showError("$e");
     }
   }
 
@@ -291,7 +287,6 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
   Widget build(BuildContext context) {
     String? userId = user?.uid;
     return Scaffold(
-      backgroundColor: AppColors.primary,
       appBar: AppBar(
         actions: [
           IconButton(
@@ -341,8 +336,6 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
           ),
         ],
         title: const Text("Open Schedule"),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.accent,
       ),
       body: SafeArea(
         child: Column(
@@ -354,19 +347,7 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                     .infinity, // You can set a specific width if necessary
                 padding: const EdgeInsets.all(
                     20.0), // Padding inside the container for spacing
-                decoration: BoxDecoration(
-                  color: AppColors.accent, // Background color for the container
-                  borderRadius: BorderRadius.circular(12.0), // Rounded corners
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black
-                          .withOpacity(0.1), // Shadow color with opacity
-                      blurRadius: 10, // Shadow blur radius
-                      offset: const Offset(
-                          0, 4), // Shadow offset (horizontal, vertical)
-                    ),
-                  ],
-                ),
+
                 child: TableCalendar(
                   firstDay: DateTime.utc(2010, 10, 16),
                   lastDay: DateTime.utc(2030, 3, 14),
@@ -380,13 +361,11 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                     _editTimeSlot(
                         selectedDay); // Open the time slot editing dialog
                   },
-                  calendarStyle: CalendarStyle(
+                  calendarStyle: const CalendarStyle(
                     selectedDecoration: BoxDecoration(
-                      color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
                     todayDecoration: BoxDecoration(
-                      color: AppColors.tertiary,
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -395,14 +374,16 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                       if (markedDatesWithTimes.containsKey(
                           DateTime(date.year, date.month, date.day))) {
                         return Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.greenAccent,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
                             shape: BoxShape.circle,
                           ),
                           child: Center(
                             child: Text(
                               '${date.day}',
-                              style: const TextStyle(color: Colors.white),
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
                             ),
                           ),
                         );
@@ -440,9 +421,8 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.tertiary.withOpacity(0.6),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.tertiary, width: 1),
+                      color: Colors.grey,
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -452,28 +432,31 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                           children: [
                             Text(
                               "Date: $formattedDate",
-                              style: TextStyle(
-                                  fontSize: 14, color: AppColors.accent),
+                              style: const TextStyle(fontSize: 14),
                             ),
                             // Show only the times (in a comma-separated string)
                             Text(
                               "Time slots: ${times.join(', ')}",
-                              style: TextStyle(
-                                  fontSize: 12, color: AppColors.accent),
+                              style: const TextStyle(
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
                         Row(
                           children: [
                             IconButton(
-                              icon:
-                                  Icon(Icons.edit, color: AppColors.secondary),
+                              icon: const Icon(
+                                Icons.edit,
+                              ),
                               onPressed: () {
                                 _editTimeSlot(date);
                               },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(
+                                Icons.delete,
+                              ),
                               onPressed: () {
                                 _showDeleteConfirmationDialogForDate(
                                     context, date);

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart';
 import 'package:silid/core/resources/models/bookings.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 import 'package:silid/core/views/student/index.dart';
 
 class BookingController extends GetxController {
@@ -37,11 +38,11 @@ class BookingController extends GetxController {
       await bookingRef.set(newBooking.toFirestore());
 
       isLoading.value = false;
-      Get.snackbar("Success", "Booking created successfully!");
       Get.off(() => const StudentIndex());
+      SnackbarWidget.showSuccess("Schedule booked Succesfully");
     } catch (e) {
       isLoading.value = false;
-      Get.snackbar("Error", "Failed to create booking: $e");
+      SnackbarWidget.showError("Failed to create booking $e");
     }
   }
 
@@ -53,7 +54,7 @@ class BookingController extends GetxController {
       bookings.value =
           querySnapshot.docs.map((doc) => Bookings.fromFirestore(doc)).toList();
     } catch (e) {
-      Get.snackbar("Error", "Failed to load bookings: $e");
+      SnackbarWidget.showError("Failed to load booking $e");
     } finally {
       isLoading.value = false;
     }
@@ -81,11 +82,11 @@ class BookingController extends GetxController {
         update(); // 🚀 Ensure UI updates automatically
       }, onError: (error) {
         isLoading.value = false;
-        Get.snackbar("Error", "Failed to fetch bookings: $error");
+        SnackbarWidget.showError("Failed to cancel booking $error");
       });
     } catch (e) {
       isLoading.value = false;
-      Get.snackbar("Error", "Failed to fetch bookings: $e");
+      SnackbarWidget.showError("Failed to cancel booking $e");
     }
   }
 
@@ -102,9 +103,9 @@ class BookingController extends GetxController {
           },
         });
 
-        Get.snackbar("Success", "Booking canceled successfully.");
+        SnackbarWidget.showSuccess("Booking cancellation success!");
       } catch (e) {
-        Get.snackbar("Error", "Failed to cancel booking: $e");
+        SnackbarWidget.showError("Failed to cancel booking $e");
       }
     } else {
       Get.snackbar("Error", "Please provide a cancellation reason.");
@@ -122,9 +123,9 @@ class BookingController extends GetxController {
           'remarks': '',
         },
       });
-      Get.snackbar("Success", "Booking finished.");
+      SnackbarWidget.showSuccess("Booking finished!");
     } catch (e) {
-      Get.snackbar("Error", "Failed to finish booking: $e");
+      SnackbarWidget.showError("Failed to finish booking");
     }
   }
 }

@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/service/daily.dart';
-import 'package:silid/core/utility/theme/colors.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/views/teacher/add_schedule.dart';
@@ -23,7 +22,7 @@ class TeacherIndex extends StatefulWidget {
 class _TeacherIndexState extends State<TeacherIndex> {
   final TeacherController teacherController = Get.find<TeacherController>();
   final BookingController bookingController = Get.find<BookingController>();
-
+  CalendarFormat calendarFormat = CalendarFormat.month;
   DateTime? selectedDay;
   DateTime focusedDay = DateTime.now();
   User? user = FirebaseAuth.instance.currentUser;
@@ -55,16 +54,18 @@ class _TeacherIndexState extends State<TeacherIndex> {
   @override
   Widget build(BuildContext context) {
     final teacher = teacherController.teacher.value;
-    var calendarFormat = CalendarFormat.month;
     return Scaffold(
       appBar: AppBar(
         actions: [
-          IconButton(
-            tooltip: 'Open A Schedule',
-            icon: const Icon(Icons.post_add),
-            onPressed: () {
-              Get.to(() => const AddSchedulePage());
-            },
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: IconButton(
+              tooltip: 'Open A Schedule',
+              icon: const Icon(Icons.post_add),
+              onPressed: () {
+                Get.to(() => const AddSchedulePage());
+              },
+            ),
           ),
         ],
         title: const Text('Teacher Dashboard'),
@@ -72,7 +73,7 @@ class _TeacherIndexState extends State<TeacherIndex> {
       drawer: Navbar(
         name: teacher?.name,
         email: teacher?.email,
-        profileImageUrl: user?.photoURL,
+        profileImageUrl: teacher?.profileImage,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -84,19 +85,8 @@ class _TeacherIndexState extends State<TeacherIndex> {
                 Container(
                   padding: const EdgeInsets.all(20.0),
                   decoration: BoxDecoration(
-                    color: AppColors
-                        .tertiary, // Background color for the container
                     borderRadius:
                         BorderRadius.circular(12.0), // Rounded corners
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black
-                            .withOpacity(0.1), // Shadow color with opacity
-                        blurRadius: 10, // Shadow blur radius
-                        offset: const Offset(
-                            0, 4), // Shadow offset (horizontal, vertical)
-                      ),
-                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,7 +95,6 @@ class _TeacherIndexState extends State<TeacherIndex> {
                         "Today is",
                         style: TextStyle(
                           fontSize: 18, // Make the "Today is" text larger
-                          color: Colors.black, // Set color as per your theme
                         ),
                       ),
 
@@ -116,7 +105,6 @@ class _TeacherIndexState extends State<TeacherIndex> {
                         style: const TextStyle(
                           fontSize: 32, // Make the date text larger
                           fontWeight: FontWeight.bold,
-                          color: Colors.black, // Set color as per your theme
                         ),
                       ),
                       GetBuilder<BookingController>(
@@ -146,15 +134,17 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                     DateFormat('yyyy-MM-dd').format(day);
                               }).toList();
                             },
-                            calendarStyle: const CalendarStyle(
-                              defaultTextStyle: TextStyle(color: Colors.black),
-                              todayTextStyle: TextStyle(color: Colors.white),
+                            calendarStyle: CalendarStyle(
                               todayDecoration: BoxDecoration(
-                                color: Colors.blue, // Highlight today's date
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary, // Use theme primary color
                                 shape: BoxShape.circle,
                               ),
                               markerDecoration: BoxDecoration(
-                                color: Colors.blue, // Events markers
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary, // Use theme secondary color
                                 shape: BoxShape.circle,
                               ),
                             ),

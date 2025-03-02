@@ -6,11 +6,13 @@ class Teacher {
   final String uid;
   final String name;
   final String email;
+  final String? profileImage;
 
   Teacher({
     required this.uid,
     required this.name,
     required this.email,
+    required this.profileImage,
   });
   //fetch data from firestore and store to local model
   factory Teacher.fromFirestore(DocumentSnapshot doc) {
@@ -19,6 +21,7 @@ class Teacher {
       uid: data['uid'],
       name: data['name'],
       email: data['email'],
+      profileImage: data['profileImage'],
     );
   }
   //fetch data from local and store to firestore
@@ -27,6 +30,7 @@ class Teacher {
       'uid': uid,
       'name': name,
       'email': email,
+      'profileImage': profileImage,
     };
   }
 
