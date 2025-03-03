@@ -6,12 +6,14 @@ class Teacher {
   final String uid;
   final String name;
   final String email;
+  final String uniqueCode;
   final String? profileImage;
 
   Teacher({
     required this.uid,
     required this.name,
     required this.email,
+    required this.uniqueCode,
     required this.profileImage,
   });
   //fetch data from firestore and store to local model
@@ -21,6 +23,7 @@ class Teacher {
       uid: data['uid'],
       name: data['name'],
       email: data['email'],
+      uniqueCode: data['uniqueCode'],
       profileImage: data['profileImage'],
     );
   }
@@ -30,6 +33,7 @@ class Teacher {
       'uid': uid,
       'name': name,
       'email': email,
+      'uniqueCode': uniqueCode,
       'profileImage': profileImage,
     };
   }

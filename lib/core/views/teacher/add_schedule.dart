@@ -338,83 +338,74 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
         title: const Text("Open Schedule"),
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Container(
-                width: double
-                    .infinity, // You can set a specific width if necessary
-                padding: const EdgeInsets.all(
-                    20.0), // Padding inside the container for spacing
-
-                child: TableCalendar(
-                  firstDay: DateTime.utc(2010, 10, 16),
-                  lastDay: DateTime.utc(2030, 3, 14),
-                  focusedDay: _focusedDay,
-                  selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                  onDaySelected: (selectedDay, focusedDay) {
-                    setState(() {
-                      _selectedDay = selectedDay;
-                      _focusedDay = focusedDay;
-                    });
-                    _editTimeSlot(
-                        selectedDay); // Open the time slot editing dialog
-                  },
-                  calendarStyle: const CalendarStyle(
-                    selectedDecoration: BoxDecoration(
-                      shape: BoxShape.circle,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20.0),
+                  child: TableCalendar(
+                    firstDay: DateTime.utc(2010, 10, 16),
+                    lastDay: DateTime.utc(2030, 3, 14),
+                    focusedDay: _focusedDay,
+                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                    onDaySelected: (selectedDay, focusedDay) {
+                      setState(() {
+                        _selectedDay = selectedDay;
+                        _focusedDay = focusedDay;
+                      });
+                      _editTimeSlot(selectedDay);
+                    },
+                    calendarStyle: const CalendarStyle(
+                      selectedDecoration: BoxDecoration(shape: BoxShape.circle),
+                      todayDecoration: BoxDecoration(shape: BoxShape.circle),
                     ),
-                    todayDecoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  calendarBuilders: CalendarBuilders(
-                    defaultBuilder: (context, date, focusedDay) {
-                      if (markedDatesWithTimes.containsKey(
-                          DateTime(date.year, date.month, date.day))) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${date.day}',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onPrimary,
+                    calendarBuilders: CalendarBuilders(
+                      defaultBuilder: (context, date, focusedDay) {
+                        if (markedDatesWithTimes.containsKey(
+                            DateTime(date.year, date.month, date.day))) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${date.day}',
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      }
-                      return null;
+                          );
+                        }
+                        return null;
+                      },
+                    ),
+                    enabledDayPredicate: (day) {
+                      return day.isAfter(DateTime.now()) ||
+                          isSameDay(day, DateTime.now());
                     },
                   ),
-                  enabledDayPredicate: (day) {
-                    // Disable past dates (any date before today)
-                    return day.isAfter(DateTime.now()) ||
-                        isSameDay(day, DateTime.now());
-                  },
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
+              const SizedBox(height: 20),
+              ListView.builder(
                 padding: const EdgeInsets.all(16),
+                shrinkWrap: true,
+                physics:
+                    const NeverScrollableScrollPhysics(), // Prevent nested scrolling issues
                 itemCount: markedDatesWithTimes.keys.length,
                 itemBuilder: (context, index) {
                   final date = markedDatesWithTimes.keys.elementAt(index);
                   final timeRanges = markedDatesWithTimes[date] ?? [];
                   final DateFormat formatter = DateFormat('MMM d, yyyy');
                   String formattedDate = formatter.format(date);
-
-                  // Get only the times from the timeRanges
                   List<String> times = timeRanges
-                      .map((timeslot) =>
-                          timeslot['time'] as String? ??
-                          '') // Ensure 'time' is a String
+                      .map((timeslot) => timeslot['time'] as String? ?? '')
                       .toList();
 
                   return Container(
@@ -430,33 +421,22 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Date: $formattedDate",
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                            // Show only the times (in a comma-separated string)
-                            Text(
-                              "Time slots: ${times.join(', ')}",
-                              style: const TextStyle(
-                                fontSize: 12,
-                              ),
-                            ),
+                            Text("Date: $formattedDate",
+                                style: const TextStyle(fontSize: 14)),
+                            Text("Time slots: ${times.join(', ')}",
+                                style: const TextStyle(fontSize: 12)),
                           ],
                         ),
                         Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                              ),
+                              icon: const Icon(Icons.edit),
                               onPressed: () {
                                 _editTimeSlot(date);
                               },
                             ),
                             IconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                              ),
+                              icon: const Icon(Icons.delete),
                               onPressed: () {
                                 _showDeleteConfirmationDialogForDate(
                                     context, date);
@@ -469,8 +449,8 @@ class _AddSchedulePageState extends State<AddSchedulePage> {
                   );
                 },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -13,35 +13,37 @@ class TeacherList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Teachers')),
-      body: Obx(() {
-        if (teacherController.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (teacherController.teachers.isEmpty) {
-          return const Center(child: Text("No students found"));
-        }
+      body: SingleChildScrollView(
+        child: Obx(() {
+          if (teacherController.isLoading.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (teacherController.teachers.isEmpty) {
+            return const Center(child: Text("No students found"));
+          }
 
-        return ListView.builder(
-          itemCount: teacherController.teachers.length,
-          itemBuilder: (context, index) {
-            final teacher = teacherController.teachers[index];
+          return ListView.builder(
+            itemCount: teacherController.teachers.length,
+            itemBuilder: (context, index) {
+              final teacher = teacherController.teachers[index];
 
-            return Card(
-              margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              child: ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.person)),
-                title: Text(teacher.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(teacher.email),
-                trailing: IconButton(
-                  icon: const Icon(Icons.info),
-                  onPressed: () {},
+              return Card(
+                margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                child: ListTile(
+                  leading: const CircleAvatar(child: Icon(Icons.person)),
+                  title: Text(teacher.name,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(teacher.email),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.info),
+                    onPressed: () {},
+                  ),
                 ),
-              ),
-            );
-          },
-        );
-      }),
+              );
+            },
+          );
+        }),
+      ),
     );
   }
 }

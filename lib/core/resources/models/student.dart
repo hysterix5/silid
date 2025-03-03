@@ -6,12 +6,14 @@ class Student {
   final String uid;
   final String name;
   final String email;
+  final Map<String, dynamic> assignedTeacher;
   final String? profileImage;
 
   Student({
     required this.uid,
     required this.name,
     required this.email,
+    required this.assignedTeacher,
     required this.profileImage,
   });
   //fetch data from firestore and store to local model
@@ -21,6 +23,7 @@ class Student {
       uid: data['uid'],
       name: data['name'],
       email: data['email'],
+      assignedTeacher: data['assigned_teacher'],
       profileImage: data['profileImage'],
     );
   }
@@ -30,6 +33,7 @@ class Student {
       'uid': uid,
       'name': name,
       'email': email,
+      'assigned_teacher': assignedTeacher,
       'profileImage': profileImage,
     };
   }

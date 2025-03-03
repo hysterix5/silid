@@ -5,7 +5,10 @@ import 'package:silid/core/utility/widgets/snackbar.dart';
 
 class StudentController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   Rx<Student?> student = Rx<Student?>(null);
+  RxMap<String, dynamic> assignedTeacher =
+      <String, dynamic>{}.obs; // 🔹 Make assignedTeacher observable
   RxList<Student> students = <Student>[].obs;
   RxBool isLoading = false.obs;
 
@@ -16,6 +19,8 @@ class StudentController extends GetxController {
           .doc(student.uid)
           .set(student.toFirestore());
       this.student.value = student; // Update local state
+      assignedTeacher.value =
+          student.assignedTeacher; // 🔹 Update assignedTeacher
     } catch (e) {
       rethrow;
     }
@@ -28,6 +33,8 @@ class StudentController extends GetxController {
       if (studentDoc.exists) {
         Student student = Student.fromFirestore(studentDoc);
         this.student.value = student; // Update local state
+        assignedTeacher.value =
+            student.assignedTeacher; // 🔹 Update assignedTeacher
         return student;
       }
       return null;
@@ -47,6 +54,18 @@ class StudentController extends GetxController {
       SnackbarWidget.showError("Failed to load students $e");
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  // 🔹 Update Assigned Teacher
+  void updateAssignedTeacher(Map<String, dynamic> teacherData) async {
+    if (student.value != null) {
+      await _firestore.collection('students').doc(student.value!.uid).update({
+        'assigned_teacher': teacherData,
+      });
+
+      assignedTeacher.value =
+          teacherData; // 🔹 Update observable assignedTeacher
     }
   }
 }

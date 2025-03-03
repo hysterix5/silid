@@ -45,18 +45,18 @@ class DataController extends GetxController {
 
       if (teacherDoc.exists) {
         await Get.find<TeacherController>().fetchTeacherData(userId);
-        Get.off(() => const TeacherIndex());
+        Get.offAll(() => const TeacherIndex());
         return;
       }
 
       if (studentDoc.exists) {
         await Get.find<StudentController>().fetchStudentData(userId);
-        Get.off(() => const StudentIndex());
+        Get.offAll(() => const StudentIndex());
         return;
       }
 
       if (adminDoc.exists) {
-        Get.off(() => const AdminPage());
+        Get.offAll(() => const AdminPage());
         return;
       }
 

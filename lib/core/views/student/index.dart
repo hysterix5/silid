@@ -1,15 +1,14 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
+import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
-import 'package:silid/core/views/student/teacher_list.dart';
+import 'package:silid/core/views/student/bookpage.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class StudentIndex extends StatefulWidget {
@@ -21,6 +20,7 @@ class StudentIndex extends StatefulWidget {
 
 class _StudentIndexState extends State<StudentIndex> {
   final StudentController studentController = Get.find<StudentController>();
+  final TeacherController teacherController = Get.find<TeacherController>();
   final BookingController bookingController = Get.find<BookingController>();
 
   DateTime? selectedDay;
@@ -48,7 +48,7 @@ class _StudentIndexState extends State<StudentIndex> {
       case "Finished":
         return Colors.blue;
       default:
-        return Colors.black; // Default color
+        return Colors.black;
     }
   }
 
@@ -57,102 +57,165 @@ class _StudentIndexState extends State<StudentIndex> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student Dashboard'),
-        actions: [
-          IconButton(
-            tooltip: 'Book a Teacher',
-            icon: const Icon(Icons.person_add),
-            onPressed: () => Get.to(() => TeachersList()),
-          ),
-        ],
       ),
       drawer: Obx(() {
         final student = studentController.student.value;
+
         return Navbar(
           name: student?.name,
           email: student?.email,
           profileImageUrl: student?.profileImage,
         );
       }),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(20.0),
-                  decoration: BoxDecoration(
-                    borderRadius:
-                        BorderRadius.circular(12.0), // Rounded corners
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Today is",
-                        style: TextStyle(
-                          fontSize: 18, // Make the "Today is" text larger
-                        ),
-                      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Date Section
+              Container(
+                padding: const EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Today is",
+                            style: TextStyle(fontSize: 18),
+                          ),
+                          Text(
+                            DateFormat('EEEE, MMMM dd, yyyy')
+                                .format(DateTime.now()),
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
 
-                      // Current Date Text with Weekday (e.g., Monday, January 24, 2025)
-                      Text(
-                        DateFormat('EEEE, MMMM dd, yyyy').format(
-                            DateTime.now()), // Include the day of the week
-                        style: const TextStyle(
-                          fontSize: 32, // Make the date text larger
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      GetBuilder<BookingController>(
-                        builder: (controller) {
-                          return TableCalendar(
-                            firstDay: DateTime.utc(2010, 10, 16),
-                            lastDay: DateTime.utc(2030, 3, 14),
-                            focusedDay: focusedDay,
-                            selectedDayPredicate: (day) =>
-                                isSameDay(selectedDay, day),
-                            onDaySelected: (newSelectedDay, newFocusedDay) {
-                              setState(() {
-                                selectedDay = newSelectedDay;
-                                focusedDay = newFocusedDay;
-                              });
-                            },
-                            calendarFormat: calendarFormat,
-                            onFormatChanged: (format) {
-                              setState(() {
-                                calendarFormat = format;
-                              });
-                            },
-                            eventLoader: (day) {
-                              return controller.bookings.where((booking) {
-                                return DateFormat('yyyy-MM-dd')
-                                        .format(booking.date) ==
-                                    DateFormat('yyyy-MM-dd').format(day);
-                              }).toList();
-                            },
-                            calendarStyle: const CalendarStyle(
-                              todayDecoration: BoxDecoration(
-                                color: Colors.blue, // Highlight today's date
-                                shape: BoxShape.circle,
+                          // Display Teacher's Name
+                          Obx(() {
+                            final assignedTeacher =
+                                studentController.assignedTeacher;
+                            return Text(
+                              assignedTeacher['name']?.isNotEmpty == true
+                                  ? "Assigned Teacher: ${assignedTeacher['name']}"
+                                  : "No Teacher Assigned Yet",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black54,
                               ),
-                              markerDecoration: BoxDecoration(
-                                color: Colors.blue, // Events markers
-                                shape: BoxShape.circle,
+                            );
+                          }),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final student = studentController.student.value;
+
+                              if (student == null ||
+                                  student.assignedTeacher['name'] == '') {
+                                debugPrint("No teacher assigned");
+
+                                // Show dialog to enter teacher code
+                                ShowDialogUtil.showTeacherCodeDialog(
+                                  title: "Assign Teacher",
+                                  onConfirm: (teacherCode) async {
+                                    await teacherController.fetchTeacherByCode(
+                                        teacherCode, student!.uid);
+                                    // Refresh the student's data after assigning a teacher
+                                    await studentController
+                                        .fetchStudentData(student.uid);
+                                  },
+                                );
+                              } else {
+                                Get.to(() => TeacherSchedulePage(
+                                      teacherId: student.assignedTeacher['uid'],
+                                      teacherName:
+                                          student.assignedTeacher['name'],
+                                    ));
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 14),
+                              textStyle: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                          );
-                        },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.calendar_month, size: 24),
+                                SizedBox(width: 8),
+                                Text("Book Schedule"),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    GetBuilder<BookingController>(
+                      builder: (controller) {
+                        return TableCalendar(
+                          firstDay: DateTime.utc(2010, 10, 16),
+                          lastDay: DateTime.utc(2030, 3, 14),
+                          focusedDay: focusedDay,
+                          selectedDayPredicate: (day) =>
+                              isSameDay(selectedDay, day),
+                          onDaySelected: (newSelectedDay, newFocusedDay) {
+                            setState(() {
+                              selectedDay = newSelectedDay;
+                              focusedDay = newFocusedDay;
+                            });
+                          },
+                          calendarFormat: calendarFormat,
+                          onFormatChanged: (format) {
+                            setState(() {
+                              calendarFormat = format;
+                            });
+                          },
+                          eventLoader: (day) {
+                            return controller.bookings.where((booking) {
+                              return DateFormat('yyyy-MM-dd')
+                                      .format(booking.date) ==
+                                  DateFormat('yyyy-MM-dd').format(day);
+                            }).toList();
+                          },
+                          calendarStyle: CalendarStyle(
+                            todayDecoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary, // Use theme primary color
+                              shape: BoxShape.circle,
+                            ),
+                            markerDecoration: BoxDecoration(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary, // Use theme secondary color
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Expanded(
-              child: Obx(() {
+              ),
+              const SizedBox(height: 10),
+
+              // Booking List
+              Obx(() {
                 if (bookingController.isLoading.value) {
                   return const Center(child: CircularProgressIndicator());
                 }
@@ -173,6 +236,8 @@ class _StudentIndexState extends State<StudentIndex> {
                 }
 
                 return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: filteredBookings.length,
                   itemBuilder: (context, index) {
                     final booking = filteredBookings[index];
@@ -180,15 +245,14 @@ class _StudentIndexState extends State<StudentIndex> {
                       margin: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 5),
                       child: ListTile(
-                        title: Text(DateFormat('hh:mm a').format(booking.date),
-                            style:
-                                const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text(
+                          DateFormat('hh:mm a').format(booking.date),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Teacher: ${booking.teacher}",
-                            ),
+                            Text("Teacher: ${booking.teacher}"),
                             Text(
                               "Status: ${booking.status['message']}",
                               style: TextStyle(
@@ -201,7 +265,9 @@ class _StudentIndexState extends State<StudentIndex> {
                                 booking.status['message'] != "Finished")
                               Padding(
                                 padding: const EdgeInsets.only(top: 10.0),
-                                child: Row(
+                                child: Wrap(
+                                  alignment: WrapAlignment.start,
+                                  spacing: 5.0, // Space between buttons
                                   children: [
                                     ElevatedButton(
                                       onPressed: () {
@@ -211,17 +277,13 @@ class _StudentIndexState extends State<StudentIndex> {
                                               "Please provide a reason for cancellation.",
                                           onConfirm: (remarks) async {
                                             bookingController.cancelBooking(
-                                              remarks,
-                                              booking.uid,
-                                            );
+                                                remarks, booking.uid);
                                           },
                                         );
                                       },
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            Colors.red, // Button color
-                                        foregroundColor:
-                                            Colors.white, // Text color
+                                        backgroundColor: Colors.red,
+                                        foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16.0, vertical: 8.0),
                                         shape: RoundedRectangleBorder(
@@ -240,10 +302,8 @@ class _StudentIndexState extends State<StudentIndex> {
                                         ),
                                       ),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            Colors.blue, // Button color
-                                        foregroundColor:
-                                            Colors.white, // Text color
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16.0, vertical: 8.0),
                                         shape: RoundedRectangleBorder(
@@ -264,8 +324,8 @@ class _StudentIndexState extends State<StudentIndex> {
                   },
                 );
               }),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

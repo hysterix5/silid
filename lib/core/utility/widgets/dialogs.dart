@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 
 class ShowDialogUtil {
   /// Shows an information dialog with a title and message.
@@ -259,6 +260,41 @@ class ShowDialogUtil {
         ),
       ),
       barrierDismissible: true, // Allow dismissing by tapping outside
+    );
+  }
+
+  static void showTeacherCodeDialog({
+    required String title,
+    required Function(String) onConfirm,
+  }) {
+    TextEditingController codeController = TextEditingController();
+
+    Get.defaultDialog(
+      title: title,
+      content: Column(
+        children: [
+          TextField(
+            controller: codeController,
+            decoration: InputDecoration(
+              labelText: "Enter Teacher Code",
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ],
+      ),
+      textConfirm: "Submit",
+      textCancel: "Cancel",
+      confirmTextColor: Colors.white,
+      onConfirm: () {
+        String code = codeController.text.trim();
+        if (code.isNotEmpty) {
+          onConfirm(code); // Pass entered code to function
+          Get.back(); // Close the dialog
+        } else {
+          SnackbarWidget.showError("Please enter a valid code");
+        }
+      },
+      onCancel: () => Get.back(),
     );
   }
 }

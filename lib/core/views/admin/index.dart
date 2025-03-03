@@ -85,121 +85,129 @@ class _AdminPageState extends State<AdminPage> {
       drawer: Navbar(
           name: name, email: user!.email, profileImageUrl: user!.photoURL),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0), // Reduced padding
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Dashboard title
-                const Text(
-                  'Administrator Dashboard',
-                  style: TextStyle(
-                    fontSize: 28.0, // Reduced font size
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blueAccent,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(12.0), // Reduced padding
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Dashboard title
+                  const Text(
+                    'Administrator Dashboard',
+                    style: TextStyle(
+                      fontSize: 28.0, // Reduced font size
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 25.0),
+                  const SizedBox(height: 25.0),
 
-                // ListView of counts for Teachers, Students, and Bookings
-                ListView(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildListTile(
-                        'Teachers', teacherCount, Icons.person, TeacherList()),
-                    _buildListTile(
-                        'Students', studentCount, Icons.school, StudentList()),
-                    _buildListTile(
-                        'Bookings', bookingCount, Icons.book, BookingsList()),
-                    _buildListTile('Announcements', announcementCount,
-                        Icons.speaker, const Announcements()),
-                    Card(
-                      elevation: 3.0, // Slightly smaller elevation
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8.0), // Smaller border radius
-                      ),
-                      margin: const EdgeInsets.only(
-                          bottom: 12.0), // Spacing between tiles
-                      child: InkWell(
-                        onTap: () {
-                          // Get.to(context, const PaymentLogs());
-                        },
-                        child: const ListTile(
-                          contentPadding:
-                              EdgeInsets.all(12.0), // Reduced padding
-                          title: Text(
-                            'Payment Transactions',
-                            style: TextStyle(
-                              fontSize: 18.0, // Reduced font size for the title
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                  // ListView of counts for Teachers, Students, and Bookings
+                  ListView(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _buildListTile('Teachers', teacherCount, Icons.person,
+                          TeacherList()),
+                      _buildListTile('Students', studentCount, Icons.school,
+                          StudentList()),
+                      _buildListTile(
+                          'Bookings', bookingCount, Icons.book, BookingsList()),
+                      _buildListTile('Announcements', announcementCount,
+                          Icons.speaker, const Announcements()),
+                      Card(
+                        elevation: 3.0, // Slightly smaller elevation
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              8.0), // Smaller border radius
+                        ),
+                        margin: const EdgeInsets.only(
+                            bottom: 12.0), // Spacing between tiles
+                        child: InkWell(
+                          onTap: () {
+                            // Get.to(context, const PaymentLogs());
+                          },
+                          child: const ListTile(
+                            contentPadding:
+                                EdgeInsets.all(12.0), // Reduced padding
+                            title: Text(
+                              'Payment Transactions',
+                              style: TextStyle(
+                                fontSize:
+                                    18.0, // Reduced font size for the title
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
                             ),
+                            leading: Icon(Icons.receipt,
+                                color:
+                                    Colors.blueAccent), // Icon based on title
                           ),
-                          leading: Icon(Icons.receipt,
-                              color: Colors.blueAccent), // Icon based on title
                         ),
                       ),
-                    ),
-                    Card(
-                      elevation: 3.0, // Slightly smaller elevation
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8.0), // Smaller border radius
-                      ),
-                      margin: const EdgeInsets.only(
-                          bottom: 12.0), // Spacing between tiles
-                      child: InkWell(
-                        onTap: () {
-                          // Get.to(context, const TransactionLogs());
-                        }, // On tap, navigate to collection page
-                        child: const ListTile(
-                          contentPadding:
-                              EdgeInsets.all(12.0), // Reduced padding
-                          title: Text(
-                            'Logs',
-                            style: TextStyle(
-                              fontSize: 18.0, // Reduced font size for the title
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                      Card(
+                        elevation: 3.0, // Slightly smaller elevation
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              8.0), // Smaller border radius
+                        ),
+                        margin: const EdgeInsets.only(
+                            bottom: 12.0), // Spacing between tiles
+                        child: InkWell(
+                          onTap: () {
+                            // Get.to(context, const TransactionLogs());
+                          }, // On tap, navigate to collection page
+                          child: const ListTile(
+                            contentPadding:
+                                EdgeInsets.all(12.0), // Reduced padding
+                            title: Text(
+                              'Logs',
+                              style: TextStyle(
+                                fontSize:
+                                    18.0, // Reduced font size for the title
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
                             ),
+                            leading: Icon(Icons.history,
+                                color:
+                                    Colors.blueAccent), // Icon based on title
                           ),
-                          leading: Icon(Icons.history,
-                              color: Colors.blueAccent), // Icon based on title
                         ),
                       ),
-                    ),
-                    Card(
-                      elevation: 3.0, // Slightly smaller elevation
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(8.0), // Smaller border radius
-                      ),
-                      margin: const EdgeInsets.only(
-                          bottom: 12.0), // Spacing between tiles
-                      child: InkWell(
-                        onTap: () {}, // On tap, navigate to collection page
-                        child: const ListTile(
-                          contentPadding:
-                              EdgeInsets.all(12.0), // Reduced padding
-                          title: Text(
-                            'Create Announcement',
-                            style: TextStyle(
-                              fontSize: 18.0, // Reduced font size for the title
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
-                          ),
-                          leading: Icon(Icons.add,
-                              color: Colors.blueAccent), // Icon based on title
+                      Card(
+                        elevation: 3.0, // Slightly smaller elevation
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              8.0), // Smaller border radius
                         ),
-                      ),
-                    )
-                  ],
-                ),
-              ],
+                        margin: const EdgeInsets.only(
+                            bottom: 12.0), // Spacing between tiles
+                        child: InkWell(
+                          onTap: () {}, // On tap, navigate to collection page
+                          child: const ListTile(
+                            contentPadding:
+                                EdgeInsets.all(12.0), // Reduced padding
+                            title: Text(
+                              'Create Announcement',
+                              style: TextStyle(
+                                fontSize:
+                                    18.0, // Reduced font size for the title
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                            leading: Icon(Icons.add,
+                                color:
+                                    Colors.blueAccent), // Icon based on title
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

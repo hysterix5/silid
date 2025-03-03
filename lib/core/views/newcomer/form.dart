@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
@@ -15,21 +18,33 @@ class TeacherForm extends StatefulWidget {
 }
 
 class _TeacherFormState extends State<TeacherForm> {
-  // Controllers for retrieving input text
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Form key
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TeacherController teacherController = Get.put(TeacherController());
   final DataController dataController = Get.put(DataController());
 
   User? user = FirebaseAuth.instance.currentUser;
-  bool _isLoading = false; // Track form submission state
+  bool _isLoading = false;
+
+  String generateRandomCode() {
+    const String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    Random random = Random();
+
+    return List.generate(6, (index) => chars[random.nextInt(chars.length)])
+        .join();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Basic Info'),
+        backgroundColor: colors.primary,
+        foregroundColor: colors.onPrimary,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -38,11 +53,11 @@ class _TeacherFormState extends State<TeacherForm> {
             width: 400,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(16.0),
               boxShadow: const [
                 BoxShadow(
-                  color: Colors.black,
+                  color: Colors.black26,
                   blurRadius: 10,
                   offset: Offset(0, 4),
                 ),
@@ -51,13 +66,13 @@ class _TeacherFormState extends State<TeacherForm> {
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Enter Your Information',
-                    style: TextStyle(
+                    style: GoogleFonts.openSans(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
+                      color: colors.onSurface,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -91,42 +106,19 @@ class _TeacherFormState extends State<TeacherForm> {
                         ? 'Please enter your last name'
                         : null,
                   ),
-
                   const SizedBox(height: 24),
 
                   // Submit Button
                   ElevatedButton(
-                    onPressed: () async {
-                      setState(() {
-                        _isLoading = true;
-                      });
-                      try {
-                        // Create a Student instance with the form data
-                        Teacher teacher = Teacher(
-                          uid: user!.uid,
-                          name:
-                              '${firstNameController.text} ${lastNameController.text}',
-                          email: user!.email!,
-                          profileImage: '',
-                        );
-                        await teacherController.submitTeacherData(teacher);
-                      } finally {
-                        await dataController.checkUserAndNavigate(user!.uid);
-                        setState(() {
-                          _isLoading = false; // Ensure loading state resets
-                        });
-                      }
-                    },
+                    onPressed: _isLoading ? null : _submitForm,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.tertiary,
+                      foregroundColor: colors.onTertiary,
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: _isLoading
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : const Text(
-                            'Submit',
-                          ),
+                        ? const CircularProgressIndicator()
+                        : const Text('Submit'),
                   ),
                 ],
               ),
@@ -137,9 +129,25 @@ class _TeacherFormState extends State<TeacherForm> {
     );
   }
 
+  void _submitForm() async {
+    setState(() => _isLoading = true);
+    try {
+      Teacher teacher = Teacher(
+        uid: user!.uid,
+        name: '${firstNameController.text} ${lastNameController.text}',
+        email: user!.email!,
+        profileImage: '',
+        uniqueCode: generateRandomCode(),
+      );
+      await teacherController.submitTeacherData(teacher);
+    } finally {
+      await dataController.checkUserAndNavigate(user!.uid);
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   void dispose() {
-    // Dispose controllers when the widget is removed
     firstNameController.dispose();
     lastNameController.dispose();
     super.dispose();
@@ -154,21 +162,29 @@ class StudentForm extends StatefulWidget {
 }
 
 class _StudentFormState extends State<StudentForm> {
-  // Controllers for retrieving input text
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Form key
+  final TextEditingController teacherCodeController =
+      TextEditingController(); // New Teacher Code field
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final StudentController studentController = Get.put(StudentController());
+  final TeacherController teacherController = Get.find<TeacherController>();
+
   final DataController dataController = Get.put(DataController());
 
   User? user = FirebaseAuth.instance.currentUser;
-  bool _isLoading = false; // Track form submission state
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Basic Info'),
+        backgroundColor: colors.primary,
+        foregroundColor: colors.onPrimary,
       ),
       body: Center(
         child: SingleChildScrollView(
@@ -177,11 +193,11 @@ class _StudentFormState extends State<StudentForm> {
             width: 400,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(16.0),
               boxShadow: const [
                 BoxShadow(
-                  color: Colors.black,
+                  color: Colors.black26,
                   blurRadius: 10,
                   offset: Offset(0, 4),
                 ),
@@ -190,13 +206,13 @@ class _StudentFormState extends State<StudentForm> {
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     'Enter Your Information',
-                    style: TextStyle(
+                    style: GoogleFonts.openSans(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
+                      color: colors.onSurface,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -230,44 +246,44 @@ class _StudentFormState extends State<StudentForm> {
                         ? 'Please enter your last name'
                         : null,
                   ),
+                  const SizedBox(height: 25),
 
+                  Text(
+                    "If you have a referred teacher, please enter their referral code. This can be applied later.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 5),
+                  TextFormField(
+                    controller: teacherCodeController,
+                    decoration: InputDecoration(
+                      labelText: 'Teacher Code (Optional)',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 24),
 
                   // Submit Button
                   ElevatedButton(
-                    onPressed: () async {
-                      setState(() {
-                        _isLoading = true;
-                      });
-                      try {
-                        // Create a Student instance with the form data
-                        Student student = Student(
-                          uid: user!.uid,
-                          name:
-                              '${firstNameController.text} ${lastNameController.text}',
-                          email: user!.email!,
-                          profileImage: '',
-                        );
-                        await studentController.submitStudentData(student);
-                      } finally {
-                        await dataController.checkUserAndNavigate(user!.uid);
-
-                        setState(() {
-                          _isLoading = false; // Ensure loading state resets
-                        });
-                      }
-                    },
+                    onPressed: _isLoading
+                        ? null
+                        : _submitForm, // Disable button while loading
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: colors.tertiary,
+                      foregroundColor: colors.onTertiary,
                       minimumSize: const Size(double.infinity, 50),
                     ),
                     child: _isLoading
-                        ? const CircularProgressIndicator(
-                            color: Colors.white,
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Colors.white),
                           )
-                        : const Text(
-                            'Submit',
-                          ),
-                  ),
+                        : const Text('Submit'),
+                  )
                 ],
               ),
             ),
@@ -277,11 +293,39 @@ class _StudentFormState extends State<StudentForm> {
     );
   }
 
+  void _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+    try {
+      String teacherCode = teacherCodeController.text.trim();
+
+      // Create student object
+      Student student = Student(
+        uid: user!.uid,
+        name: '${firstNameController.text} ${lastNameController.text}',
+        email: user!.email!,
+        assignedTeacher: {
+          'name': '',
+          'uid': '',
+        },
+        profileImage: '',
+      );
+      await studentController.submitStudentData(student);
+      if (teacherCode.isNotEmpty) {
+        await teacherController.assignTeacher(teacherCode, student.uid);
+      }
+    } finally {
+      await dataController.checkUserAndNavigate(user!.uid);
+      setState(() => _isLoading = false);
+    }
+  }
+
   @override
   void dispose() {
-    // Dispose controllers when the widget is removed
     firstNameController.dispose();
     lastNameController.dispose();
+    teacherCodeController.dispose(); // Dispose new controller
     super.dispose();
   }
 }
