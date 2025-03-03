@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
+import 'package:silid/core/resources/controllers/daily_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/service/daily.dart';
@@ -22,6 +23,7 @@ class _StudentIndexState extends State<StudentIndex> {
   final StudentController studentController = Get.find<StudentController>();
   final TeacherController teacherController = Get.find<TeacherController>();
   final BookingController bookingController = Get.find<BookingController>();
+  final DailyController dailyController = Get.find<DailyController>();
 
   DateTime? selectedDay;
   DateTime focusedDay = DateTime.now();
@@ -131,7 +133,6 @@ class _StudentIndexState extends State<StudentIndex> {
                                   onConfirm: (teacherCode) async {
                                     await teacherController.fetchTeacherByCode(
                                         teacherCode, student!.uid);
-                                    // Refresh the student's data after assigning a teacher
                                     await studentController
                                         .fetchStudentData(student.uid);
                                   },
@@ -276,6 +277,9 @@ class _StudentIndexState extends State<StudentIndex> {
                                           message:
                                               "Please provide a reason for cancellation.",
                                           onConfirm: (remarks) async {
+                                            await dailyController
+                                                .deleteDailyRoom(
+                                                    booking.meetingLink);
                                             bookingController.cancelBooking(
                                                 remarks, booking.uid);
                                           },

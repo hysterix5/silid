@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
@@ -11,6 +12,12 @@ class TeacherController extends GetxController {
   Rx<Teacher?> teacher = Rx<Teacher?>(null);
   var teachers = <Teacher>[].obs;
   var isLoading = true.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchTeachers(); // ✅ Now it's inside onInit()
+  }
 
   Future<void> submitTeacherData(Teacher teacher) async {
     try {
@@ -26,16 +33,30 @@ class TeacherController extends GetxController {
 
   Future<Teacher?> fetchTeacherData(String uid) async {
     try {
-      DocumentSnapshot teacherDoc =
-          await _firestore.collection('teachers').doc(uid).get();
-      if (teacherDoc.exists) {
-        Teacher teacher = Teacher.fromFirestore(teacherDoc);
-        this.teacher.value = teacher; // Update local state
-        return teacher;
+      DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(uid)
+          .get();
+
+      if (!teacherDoc.exists) {
+        SnackbarWidget.showError("Teacher not found.");
+        return null;
       }
-      return null;
+
+      // ✅ Parse the teacher data using the fixed model
+      Teacher teacher = Teacher.fromFirestore(teacherDoc);
+      this.teacher.value = teacher; // Update local state
+
+      // ✅ Check subscription validity
+      if (teacher.subscribedUntil.isBefore(DateTime.now())) {
+        SnackbarWidget.showError("Your subscription has expired.");
+        return null;
+      }
+
+      return teacher;
     } catch (e) {
-      rethrow;
+      SnackbarWidget.showError("Failed to fetch teacher data: $e");
+      return null;
     }
   }
 
@@ -125,6 +146,55 @@ class TeacherController extends GetxController {
       }
     } catch (e) {
       SnackbarWidget.showError("Error fetching/updating teacher: $e");
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> deleteTeacher(String teacherUid) async {
+    try {
+      isLoading(true);
+      // First, delete all documents in the subcollection (e.g., 'teacher_subcollection')
+      final subcollectionRef = FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(teacherUid)
+          .collection('schedules'); // Replace with your subcollection name
+
+      // Get all documents in the subcollection
+      final snapshot = await subcollectionRef.get();
+
+      // Delete each document in the subcollection
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+      // Then delete the teacher document itself
+      await FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(teacherUid)
+          .delete();
+      teachers.removeWhere((teacher) => teacher.uid == teacherUid);
+
+      SnackbarWidget.showSuccess("Teacher deletion successful");
+    } catch (e) {
+      SnackbarWidget.showSuccess('Error deleting teacher: $e');
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> extendSubscription(String teacherId, DateTime newDate) async {
+    try {
+      isLoading(true);
+      await FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(teacherId)
+          .update({'subscribed_until': Timestamp.fromDate(newDate)});
+
+      SnackbarWidget.showSuccess(
+          "Subscription extended to ${DateFormat.yMMMMd().format(newDate)}");
+      fetchTeachers(); // Refresh UI
+    } catch (e) {
+      SnackbarWidget.showError("Failed to extend subscription: $e");
     } finally {
       isLoading(false);
     }

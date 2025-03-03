@@ -41,4 +41,32 @@ class DailyController extends GetxController {
       return null;
     }
   }
+
+  Future<void> deleteDailyRoom(String meetingLink) async {
+    // Extract room name from the URL (assuming format: "https://yourdomain.daily.co/roomName")
+    Uri uri = Uri.parse(meetingLink);
+    String roomName = uri.pathSegments.last; // Gets the last part of the URL
+
+    String apiKey =
+        "6837625f7f0f2be853170370eef18b99aaa5889cbb4d4b10919d319a22f58a63"; // Replace with your Daily.co API Key
+    String url = "https://api.daily.co/v1/rooms/$roomName";
+
+    try {
+      var response = await http.delete(
+        Uri.parse(url),
+        headers: {
+          "Authorization": "Bearer $apiKey",
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint("Meeting room deleted successfully");
+      } else {
+        debugPrint("Failed to delete meeting room: ${response.body}");
+      }
+    } catch (e) {
+      debugPrint("Error deleting meeting room: $e");
+    }
+  }
 }

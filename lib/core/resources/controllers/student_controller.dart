@@ -63,7 +63,6 @@ class StudentController extends GetxController {
       await _firestore.collection('students').doc(student.value!.uid).update({
         'assigned_teacher': teacherData,
       });
-
       assignedTeacher.value =
           teacherData; // 🔹 Update observable assignedTeacher
     }

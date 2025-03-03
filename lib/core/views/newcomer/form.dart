@@ -138,6 +138,7 @@ class _TeacherFormState extends State<TeacherForm> {
         email: user!.email!,
         profileImage: '',
         uniqueCode: generateRandomCode(),
+        subscribedUntil: DateTime.now(), // Example: 30-day subscription
       );
       await teacherController.submitTeacherData(teacher);
     } finally {

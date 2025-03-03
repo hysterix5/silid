@@ -6,11 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
+import 'package:silid/core/resources/controllers/daily_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
+import 'package:silid/core/views/teacher/add_schedule.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class TeacherIndex extends StatefulWidget {
@@ -23,6 +25,8 @@ class TeacherIndex extends StatefulWidget {
 class _TeacherIndexState extends State<TeacherIndex> {
   final TeacherController teacherController = Get.find<TeacherController>();
   final BookingController bookingController = Get.find<BookingController>();
+  final DailyController dailyController = Get.find<DailyController>();
+
   CalendarFormat calendarFormat = CalendarFormat.month;
   DateTime? selectedDay;
   DateTime focusedDay = DateTime.now();
@@ -132,7 +136,16 @@ class _TeacherIndexState extends State<TeacherIndex> {
                               ),
                               const SizedBox(height: 10),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  if (teacher.subscribedUntil
+                                      .isBefore(DateTime.now())) {
+                                    SnackbarWidget.showError(
+                                        "Cannot perform this action. Your subscription has expired.");
+                                    return;
+                                  } else {
+                                    Get.to(() => AddSchedulePage());
+                                  }
+                                },
                                 style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.symmetric(
                                       horizontal: 16,
@@ -276,6 +289,9 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                             message:
                                                 "Please provide a reason for cancellation.",
                                             onConfirm: (remarks) async {
+                                              await dailyController
+                                                  .deleteDailyRoom(
+                                                      booking.meetingLink);
                                               bookingController.cancelBooking(
                                                   remarks, booking.uid);
                                             },
@@ -300,6 +316,8 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                             message:
                                                 "Are you sure to end this booking?",
                                             onConfirm: () {
+                                              dailyController.deleteDailyRoom(
+                                                  booking.meetingLink);
                                               bookingController
                                                   .finishBooking(booking.uid);
                                             },

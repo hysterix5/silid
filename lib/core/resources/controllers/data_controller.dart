@@ -88,16 +88,23 @@ class DataController extends GetxController {
           .collection('schedules')
           .get();
 
+      if (querySnapshot.docs.isEmpty) {
+        // 🛑 No schedules found, handle accordingly (optional)
+        schedules.value = [];
+        return;
+      }
+
       schedules.value = querySnapshot.docs.map((doc) {
         var data = doc.data() as Map<String, dynamic>;
         return {
           'uid': doc.id,
-          'date': data['date'], // ✅ Ensure date handling is done correctly
+          'date': (data['date'] as Timestamp)
+              .toDate(), // ✅ Ensure proper date conversion
           'timeslots': List.from(data['timeslots'] ?? []),
         };
       }).toList();
     } catch (e) {
-      SnackbarWidget.showError("Failed to fetch schedules $e");
+      SnackbarWidget.showError("Failed to fetch schedules: $e");
     } finally {
       isLoading.value = false;
     }
