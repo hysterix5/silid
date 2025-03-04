@@ -44,13 +44,7 @@ class Navbar extends StatelessWidget {
               SnackbarWidget.showError('Test Snackbar');
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () {
-              // Navigate to settings
-            },
-          ),
+
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),

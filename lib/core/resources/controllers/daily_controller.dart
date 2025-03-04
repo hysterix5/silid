@@ -28,9 +28,7 @@ class DailyController extends GetxController {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final String roomUrl = data["url"];
-        debugPrint(
-            "✅ Generated Room URL: $roomUrl"); // Print the URL for testing
+        final String roomUrl = data["url"]; // Print the URL for testing
         return roomUrl;
       } else {
         debugPrint("❌ Failed to create room: ${response.body}");

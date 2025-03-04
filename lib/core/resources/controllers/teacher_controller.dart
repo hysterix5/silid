@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:silid/core/resources/controllers/auth_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
@@ -16,7 +17,19 @@ class TeacherController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    fetchTeachers(); // ✅ Now it's inside onInit()
+    final user = Get.find<AuthController>().currentUser.value;
+    if (user != null) {
+      listenToTeacherUpdates(user.uid);
+    }
+    fetchTeachers(); // Keep fetching all teachers
+  }
+
+  void listenToTeacherUpdates(String teacherId) {
+    _firestore.collection('teachers').doc(teacherId).snapshots().listen((doc) {
+      if (doc.exists) {
+        teacher.value = Teacher.fromFirestore(doc);
+      }
+    });
   }
 
   Future<void> submitTeacherData(Teacher teacher) async {
@@ -33,27 +46,20 @@ class TeacherController extends GetxController {
 
   Future<Teacher?> fetchTeacherData(String uid) async {
     try {
-      DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
-          .collection('teachers')
-          .doc(uid)
-          .get();
+      DocumentSnapshot teacherDoc =
+          await _firestore.collection('teachers').doc(uid).get();
 
       if (!teacherDoc.exists) {
         SnackbarWidget.showError("Teacher not found.");
         return null;
       }
 
-      // ✅ Parse the teacher data using the fixed model
-      Teacher teacher = Teacher.fromFirestore(teacherDoc);
-      this.teacher.value = teacher; // Update local state
+      teacher.value = Teacher.fromFirestore(teacherDoc);
 
-      // ✅ Check subscription validity
-      if (teacher.subscribedUntil.isBefore(DateTime.now())) {
-        SnackbarWidget.showError("Your subscription has expired.");
-        return null;
-      }
+      // ✅ Start real-time listener after fetching data
+      listenToTeacherUpdates(uid);
 
-      return teacher;
+      return teacher.value;
     } catch (e) {
       SnackbarWidget.showError("Failed to fetch teacher data: $e");
       return null;
@@ -96,7 +102,9 @@ class TeacherController extends GetxController {
             querySnapshot.docs.first.data() as Map<String, dynamic>;
 
         final String teacherId = teacherData['uid'] ?? '';
-        final String teacherName = teacherData['name'] ?? 'Unknown';
+        final String teacherName =
+            "${teacherData['firstName'] ?? ''} ${teacherData['lastName'] ?? 'Unknown'}"
+                .trim();
 
         // Update student's assignedTeacher field
         await FirebaseFirestore.instance

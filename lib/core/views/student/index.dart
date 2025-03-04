@@ -36,7 +36,10 @@ class _StudentIndexState extends State<StudentIndex> {
     final student = studentController.student.value;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (user != null) {
-        bookingController.fetchBookings(studentName: student!.name);
+        bookingController.fetchBookings(
+          studentName:
+              "${student?.firstName ?? ''} ${student?.lastName ?? ''}".trim(),
+        );
       }
     });
   }
@@ -64,9 +67,9 @@ class _StudentIndexState extends State<StudentIndex> {
         final student = studentController.student.value;
 
         return Navbar(
-          name: student?.name,
-          email: student?.email,
-          profileImageUrl: student?.profileImage,
+          name: "${student?.firstName ?? ''} ${student?.lastName ?? ''}".trim(),
+          email: student?.email ?? "No email provided",
+          profileImageUrl: student?.profileImage ?? "",
         );
       }),
       body: SingleChildScrollView(
@@ -114,7 +117,6 @@ class _StudentIndexState extends State<StudentIndex> {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.black54,
                               ),
                             );
                           }),

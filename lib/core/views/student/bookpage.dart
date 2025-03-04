@@ -43,14 +43,8 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
       var rawDate = schedule['date'];
 
       // ✅ Ensure `date` is converted correctly
-      DateTime scheduleDate;
-      if (rawDate is Timestamp) {
-        scheduleDate = rawDate.toDate();
-      } else if (rawDate is DateTime) {
-        scheduleDate = rawDate;
-      } else {
-        return false; // Skip invalid entries
-      }
+      DateTime scheduleDate =
+          (rawDate is Timestamp) ? rawDate.toDate() : rawDate as DateTime;
 
       scheduleDate =
           DateTime(scheduleDate.year, scheduleDate.month, scheduleDate.day);
@@ -113,8 +107,9 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                   title: Text(
                                     DateFormat('EEEE, MMM d, yyyy').format(
                                         (schedule['date'] is Timestamp)
-                                            ? schedule['date'].toDate()
-                                            : schedule['date']),
+                                            ? (schedule['date'] as Timestamp)
+                                                .toDate()
+                                            : (schedule['date'] as DateTime)),
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold),
                                   ),
@@ -160,11 +155,16 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                                 .value = true;
 
                                                             try {
-                                                              DateTime
-                                                                  scheduleDate =
-                                                                  (schedule['date']
+                                                              DateTime scheduleDate = (schedule[
+                                                                          'date']
+                                                                      is Timestamp)
+                                                                  ? (schedule['date']
                                                                           as Timestamp)
-                                                                      .toDate();
+                                                                      .toDate()
+                                                                  : (schedule[
+                                                                          'date']
+                                                                      as DateTime);
+
                                                               String
                                                                   timeString =
                                                                   slot['time'];
@@ -208,8 +208,8 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                                 await bookingController
                                                                     .createBooking(
                                                                   student:
-                                                                      student!
-                                                                          .name,
+                                                                      "${student?.firstName ?? ''} ${student?.lastName ?? ''}"
+                                                                          .trim(),
                                                                   teacher: widget
                                                                       .teacherName,
                                                                   date:
@@ -233,6 +233,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                                       .isLoading
                                                                       .value =
                                                                   false;
+                                                              debugPrint("$e");
                                                               SnackbarWidget
                                                                   .showError(
                                                                       "Failed to book $e");

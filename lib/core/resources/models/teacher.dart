@@ -4,7 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Teacher {
   final String uid;
-  final String name;
+  final String firstName;
+  final String lastName;
   final String email;
   final String uniqueCode;
   final String? profileImage;
@@ -12,7 +13,8 @@ class Teacher {
 
   Teacher(
       {required this.uid,
-      required this.name,
+      required this.firstName,
+      required this.lastName,
       required this.email,
       required this.uniqueCode,
       required this.profileImage,
@@ -23,7 +25,8 @@ class Teacher {
 
     return Teacher(
       uid: data['uid'],
-      name: data['name'],
+      firstName: data['firstName'],
+      lastName: data['lastName'],
       email: data['email'],
       uniqueCode: data['uniqueCode'],
       profileImage: data['profileImage'],
@@ -35,17 +38,13 @@ class Teacher {
   Map<String, dynamic> toFirestore() {
     return {
       'uid': uid,
-      'name': name,
+      'firstName': firstName,
+      'lastName': lastName,
       'email': email,
       'uniqueCode': uniqueCode,
       'profileImage': profileImage,
       'subscribed_until': Timestamp.fromDate(
           subscribedUntil), // ✅ Ensure it's stored as a Timestamp
     };
-  }
-
-  @override
-  String toString() {
-    return 'Teacher(uid: $uid, name: $name, email: $email)';
   }
 }

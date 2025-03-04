@@ -7,7 +7,9 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
 import 'package:silid/core/resources/controllers/daily_controller.dart';
+import 'package:silid/core/resources/controllers/payment_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
+import 'package:silid/core/resources/models/teacher.dart';
 import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
@@ -26,6 +28,7 @@ class _TeacherIndexState extends State<TeacherIndex> {
   final TeacherController teacherController = Get.find<TeacherController>();
   final BookingController bookingController = Get.find<BookingController>();
   final DailyController dailyController = Get.find<DailyController>();
+  final paymentController = Get.find<PaymentController>();
 
   CalendarFormat calendarFormat = CalendarFormat.month;
   DateTime? selectedDay;
@@ -38,7 +41,10 @@ class _TeacherIndexState extends State<TeacherIndex> {
     final teacher = teacherController.teacher.value;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (user != null) {
-        bookingController.fetchBookings(teacherName: teacher!.name);
+        bookingController.fetchBookings(
+          teacherName:
+              "${teacher?.firstName ?? ''} ${teacher?.lastName ?? ''}".trim(),
+        );
       }
     });
   }
@@ -56,15 +62,29 @@ class _TeacherIndexState extends State<TeacherIndex> {
     }
   }
 
+  void initiatePayment(Teacher? teacher) {
+    paymentController.setTeacher(teacher); // Set teacher data first
+    // Then start payment
+  }
+
   @override
   Widget build(BuildContext context) {
     final teacher = teacherController.teacher.value;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Teacher Dashboard'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              initiatePayment(teacher);
+            },
+            icon: Icon(Icons.add_circle),
+            tooltip: "Extend Subscription",
+          )
+        ],
       ),
       drawer: Navbar(
-        name: teacher?.name,
+        name: "${teacher?.firstName ?? ''} ${teacher?.lastName ?? ''}".trim(),
         email: teacher?.email,
         profileImageUrl: teacher?.profileImage,
       ),
@@ -116,7 +136,6 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
-                                      color: Colors.black54,
                                     ),
                                   ),
                                   const SizedBox(

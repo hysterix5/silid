@@ -31,7 +31,7 @@ class StudentList extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child: ListTile(
                 leading: const CircleAvatar(child: Icon(Icons.person)),
-                title: Text(student.name,
+                title: Text('${student.firstName} ${student.lastName}',
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(student.email),
                 trailing: IconButton(

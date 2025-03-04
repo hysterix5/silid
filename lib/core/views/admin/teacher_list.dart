@@ -31,7 +31,7 @@ class TeacherList extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child: ListTile(
                 title: Text(
-                  teacher.name,
+                  '${teacher.firstName} ${teacher.lastName}',
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 subtitle: Column(

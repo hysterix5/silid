@@ -4,14 +4,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Student {
   final String uid;
-  final String name;
+  final String firstName;
+  final String lastName;
   final String email;
   final Map<String, dynamic> assignedTeacher;
   final String? profileImage;
 
   Student({
     required this.uid,
-    required this.name,
+    required this.firstName,
+    required this.lastName,
     required this.email,
     required this.assignedTeacher,
     required this.profileImage,
@@ -21,7 +23,8 @@ class Student {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Student(
       uid: data['uid'],
-      name: data['name'],
+      firstName: data['firstName'],
+      lastName: data['lastName'],
       email: data['email'],
       assignedTeacher: data['assigned_teacher'],
       profileImage: data['profileImage'],
@@ -31,15 +34,11 @@ class Student {
   Map<String, dynamic> toFirestore() {
     return {
       'uid': uid,
-      'name': name,
+      'firstName': firstName,
+      'lastName': lastName,
       'email': email,
       'assigned_teacher': assignedTeacher,
       'profileImage': profileImage,
     };
-  }
-
-  @override
-  String toString() {
-    return 'Student(uid: $uid, name: $name, email: $email)';
   }
 }

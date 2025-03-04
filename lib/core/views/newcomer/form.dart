@@ -134,7 +134,8 @@ class _TeacherFormState extends State<TeacherForm> {
     try {
       Teacher teacher = Teacher(
         uid: user!.uid,
-        name: '${firstNameController.text} ${lastNameController.text}',
+        firstName: firstNameController.text,
+        lastName: lastNameController.text,
         email: user!.email!,
         profileImage: '',
         uniqueCode: generateRandomCode(),
@@ -284,7 +285,7 @@ class _StudentFormState extends State<StudentForm> {
                                 strokeWidth: 2, color: Colors.white),
                           )
                         : const Text('Submit'),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -304,7 +305,8 @@ class _StudentFormState extends State<StudentForm> {
       // Create student object
       Student student = Student(
         uid: user!.uid,
-        name: '${firstNameController.text} ${lastNameController.text}',
+        firstName: firstNameController.text,
+        lastName: lastNameController.text,
         email: user!.email!,
         assignedTeacher: {
           'name': '',
