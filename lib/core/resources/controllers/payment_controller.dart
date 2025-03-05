@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
-import 'package:silid/core/views/payment/failed.dart';
-import 'package:silid/core/views/payment/success.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:html' as html;
@@ -169,12 +167,6 @@ class PaymentController extends GetxController {
               await Get.find<TeacherController>().fetchTeacherData(teacherId);
             }
           });
-
-          if (Get.currentRoute != '/payment-success') {
-            Get.off(() => SuccessPage());
-          }
-        } else {
-          Get.off(() => FailedPage());
         }
       }
 

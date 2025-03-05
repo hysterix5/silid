@@ -53,13 +53,13 @@ class TeacherController extends GetxController {
         SnackbarWidget.showError("Teacher not found.");
         return null;
       }
-
-      teacher.value = Teacher.fromFirestore(teacherDoc);
+      Teacher teacher = Teacher.fromFirestore(teacherDoc);
+      this.teacher.value = teacher;
 
       // ✅ Start real-time listener after fetching data
       listenToTeacherUpdates(uid);
 
-      return teacher.value;
+      return teacher;
     } catch (e) {
       SnackbarWidget.showError("Failed to fetch teacher data: $e");
       return null;

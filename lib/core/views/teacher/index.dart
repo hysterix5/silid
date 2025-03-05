@@ -69,14 +69,16 @@ class _TeacherIndexState extends State<TeacherIndex> {
 
   @override
   Widget build(BuildContext context) {
-    final teacher = teacherController.teacher.value;
+    if (teacherController.teacher.value == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Teacher Dashboard'),
         actions: [
           IconButton(
             onPressed: () {
-              initiatePayment(teacher);
+              initiatePayment(teacherController.teacher.value);
             },
             icon: Icon(Icons.add_circle),
             tooltip: "Extend Subscription",
@@ -84,311 +86,296 @@ class _TeacherIndexState extends State<TeacherIndex> {
         ],
       ),
       drawer: Navbar(
-        name: "${teacher?.firstName ?? ''} ${teacher?.lastName ?? ''}".trim(),
-        email: teacher?.email,
-        profileImageUrl: teacher?.profileImage,
+        name:
+            "${teacherController.teacher.value?.firstName ?? ''} ${teacherController.teacher.value?.lastName ?? ''}"
+                .trim(),
+        email: teacherController.teacher.value?.email,
+        profileImageUrl: teacherController.teacher.value?.profileImage,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: SingleChildScrollView(
-          // Make the page scrollable
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20.0),
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          BorderRadius.circular(12.0), // Rounded corners
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "Today is",
-                                style: TextStyle(
-                                  fontSize:
-                                      18, // Make the "Today is" text larger
+      body: Obx(() {
+        if (teacherController.isLoading.value) {
+          return const Center(
+              child:
+                  CircularProgressIndicator()); // Show loading while fetching teacher data
+        }
+
+        final teacher = teacherController.teacher.value;
+
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Today is",
+                              style: TextStyle(fontSize: 18),
+                            ),
+                            Text(
+                              DateFormat('EEEE, MMMM dd, yyyy')
+                                  .format(DateTime.now()),
+                              style: const TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Text(
+                                  "Referral Code: ${teacher?.uniqueCode}",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                DateFormat('EEEE, MMMM dd, yyyy')
-                                    .format(DateTime.now()),
-                                style: const TextStyle(
-                                  fontSize: 32, // Make the date text larger
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  onPressed: () {
+                                    Clipboard.setData(ClipboardData(
+                                        text: teacher!.uniqueCode));
+                                    SnackbarWidget.showSuccess(
+                                        "Referral Code Copied");
+                                  },
+                                  icon: const Icon(Icons.copy,
+                                      color: Colors.blue),
+                                  tooltip: "Copy Referral Code",
                                 ),
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              Row(
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (teacher!.subscribedUntil
+                                    .isBefore(DateTime.now())) {
+                                  SnackbarWidget.showError(
+                                      "Cannot perform this action. Your subscription has expired.");
+                                  return;
+                                } else {
+                                  Get.to(() => AddSchedulePage());
+                                }
+                              },
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    "Referral Code: ${teacher!.uniqueCode}",
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                      width: 8), // Space between text and icon
-                                  IconButton(
-                                    onPressed: () {
-                                      Clipboard.setData(ClipboardData(
-                                          text: teacher.uniqueCode));
-                                      SnackbarWidget.showSuccess(
-                                          "Referral Code Copied");
-                                    },
-                                    icon: const Icon(Icons.copy,
-                                        color: Colors.blue),
-                                    tooltip: "Copy Referral Code",
-                                  ),
+                                  const Icon(Icons.edit_calendar_outlined,
+                                      size: 24),
+                                  const SizedBox(width: 8),
+                                  const Text("Open Schedule"),
                                 ],
                               ),
-                              const SizedBox(height: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (teacher.subscribedUntil
-                                      .isBefore(DateTime.now())) {
-                                    SnackbarWidget.showError(
-                                        "Cannot perform this action. Your subscription has expired.");
-                                    return;
-                                  } else {
-                                    Get.to(() => AddSchedulePage());
-                                  }
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical:
-                                          14), // Adjust padding for a square-like look
-                                  textStyle: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight:
-                                          FontWeight.bold), // Emphasize text
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                        12), // Adjust border radius for a more square-like shape
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.edit_calendar_outlined,
-                                        size:
-                                            24), // Slightly larger icon for emphasis
-                                    SizedBox(
-                                        width:
-                                            8), // Space between icon and text
-                                    Text("Open Schedule"),
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        GetBuilder<BookingController>(
-                          builder: (controller) {
-                            return TableCalendar(
-                              firstDay: DateTime.utc(2010, 10, 16),
-                              lastDay: DateTime.utc(2030, 3, 14),
-                              focusedDay: focusedDay,
-                              selectedDayPredicate: (day) =>
-                                  isSameDay(selectedDay, day),
-                              onDaySelected: (newSelectedDay, newFocusedDay) {
-                                setState(() {
-                                  selectedDay = newSelectedDay;
-                                  focusedDay = newFocusedDay;
-                                });
-                              },
-                              calendarFormat: calendarFormat,
-                              onFormatChanged: (format) {
-                                setState(() {
-                                  calendarFormat = format;
-                                });
-                              },
-                              eventLoader: (day) {
-                                return controller.bookings.where((booking) {
-                                  return DateFormat('yyyy-MM-dd')
-                                          .format(booking.date) ==
-                                      DateFormat('yyyy-MM-dd').format(day);
-                                }).toList();
-                              },
-                              calendarStyle: CalendarStyle(
-                                todayDecoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary, // Use theme primary color
-                                  shape: BoxShape.circle,
-                                ),
-                                markerDecoration: BoxDecoration(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary, // Use theme secondary color
-                                  shape: BoxShape.circle,
-                                ),
+                      ),
+                      GetBuilder<BookingController>(
+                        builder: (controller) {
+                          return TableCalendar(
+                            firstDay: DateTime.utc(2010, 10, 16),
+                            lastDay: DateTime.utc(2030, 3, 14),
+                            focusedDay: focusedDay,
+                            selectedDayPredicate: (day) =>
+                                isSameDay(selectedDay, day),
+                            onDaySelected: (newSelectedDay, newFocusedDay) {
+                              setState(() {
+                                selectedDay = newSelectedDay;
+                                focusedDay = newFocusedDay;
+                              });
+                            },
+                            calendarFormat: calendarFormat,
+                            onFormatChanged: (format) {
+                              setState(() {
+                                calendarFormat = format;
+                              });
+                            },
+                            eventLoader: (day) {
+                              return controller.bookings.where((booking) {
+                                return DateFormat('yyyy-MM-dd')
+                                        .format(booking.date) ==
+                                    DateFormat('yyyy-MM-dd').format(day);
+                              }).toList();
+                            },
+                            calendarStyle: CalendarStyle(
+                              todayDecoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
                               ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                              markerDecoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Obx(() {
-                if (bookingController.isLoading.value) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (bookingController.bookings.isEmpty) {
-                  return const Center(child: Text("No bookings found"));
-                }
+                ),
+                const SizedBox(height: 10),
+                Obx(() {
+                  if (bookingController.isLoading.value) {
+                    return const Center(
+                        child:
+                            CircularProgressIndicator()); // Show loading while fetching bookings
+                  }
 
-                final selectedDate = selectedDay ?? focusedDay;
-                final filteredBookings =
-                    bookingController.bookings.where((booking) {
-                  return DateFormat('yyyy-MM-dd').format(booking.date) ==
-                      DateFormat('yyyy-MM-dd').format(selectedDate);
-                }).toList();
+                  if (bookingController.bookings.isEmpty) {
+                    return const Center(child: Text("No bookings found"));
+                  }
 
-                if (filteredBookings.isEmpty) {
-                  return const Center(
-                      child: Text("No bookings for selected day"));
-                }
+                  final selectedDate = selectedDay ?? focusedDay;
+                  final filteredBookings =
+                      bookingController.bookings.where((booking) {
+                    return DateFormat('yyyy-MM-dd').format(booking.date) ==
+                        DateFormat('yyyy-MM-dd').format(selectedDate);
+                  }).toList();
 
-                return SizedBox(
-                  height: 400, // Set a fixed height for the list
-                  child: ListView.builder(
-                    physics:
-                        const NeverScrollableScrollPhysics(), // Prevent nested scrolling issues
-                    shrinkWrap: true, // Ensure it takes only the needed space
-                    itemCount: filteredBookings.length,
-                    itemBuilder: (context, index) {
-                      final booking = filteredBookings[index];
-                      return Card(
-                        child: ListTile(
-                          title: Text(
+                  if (filteredBookings.isEmpty) {
+                    return const Center(
+                        child: Text("No bookings for selected day"));
+                  }
+
+                  return SizedBox(
+                    height: 400,
+                    child: ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: filteredBookings.length,
+                      itemBuilder: (context, index) {
+                        final booking = filteredBookings[index];
+                        return Card(
+                          child: ListTile(
+                            title: Text(
                               DateFormat('hh:mm a').format(booking.date),
                               style:
-                                  const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text("Student: ${booking.student}"),
-                              Text(
-                                "Status: ${booking.status['message']}",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: _getStatusColor(
-                                      booking.status['message']),
-                                ),
-                              ),
-                              if (booking.status['message'] != "Cancelled" &&
-                                  booking.status['message'] != "Finished")
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 10.0),
-                                  child: Wrap(
-                                    alignment: WrapAlignment.start,
-                                    spacing: 5.0, // Space between buttons
-                                    // Space between wrapped rows
-                                    children: [
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          ShowDialogUtil.showCancellationDialog(
-                                            title: "Cancel Booking",
-                                            message:
-                                                "Please provide a reason for cancellation.",
-                                            onConfirm: (remarks) async {
-                                              await dailyController
-                                                  .deleteDailyRoom(
-                                                      booking.meetingLink);
-                                              bookingController.cancelBooking(
-                                                  remarks, booking.uid);
-                                            },
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.red,
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16.0, vertical: 8.0),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                        ),
-                                        child: const Text("Cancel"),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          ShowDialogUtil.showConfirmDialog(
-                                            title: "End Booking",
-                                            message:
-                                                "Are you sure to end this booking?",
-                                            onConfirm: () {
-                                              dailyController.deleteDailyRoom(
-                                                  booking.meetingLink);
-                                              bookingController
-                                                  .finishBooking(booking.uid);
-                                            },
-                                          );
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16.0, vertical: 8.0),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                        ),
-                                        child: const Text("Mark as Finished"),
-                                      ),
-                                      ElevatedButton(
-                                        onPressed: () => Get.to(
-                                          () => MeetingScreen(
-                                            roomUrl: booking.meetingLink,
-                                            userName: booking.teacher,
-                                          ),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.blue,
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16.0, vertical: 8.0),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
-                                        ),
-                                        child: const Text("Go to Room"),
-                                      ),
-                                    ],
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text("Student: ${booking.student}"),
+                                Text(
+                                  "Status: ${booking.status['message']}",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: _getStatusColor(
+                                        booking.status['message']),
                                   ),
                                 ),
-                            ],
+                                if (booking.status['message'] != "Cancelled" &&
+                                    booking.status['message'] != "Finished")
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 10.0),
+                                    child: Wrap(
+                                      alignment: WrapAlignment.start,
+                                      spacing: 5.0,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            ShowDialogUtil
+                                                .showCancellationDialog(
+                                              title: "Cancel Booking",
+                                              message:
+                                                  "Please provide a reason for cancellation.",
+                                              onConfirm: (remarks) async {
+                                                await dailyController
+                                                    .deleteDailyRoom(
+                                                        booking.meetingLink);
+                                                bookingController.cancelBooking(
+                                                    remarks, booking.uid);
+                                              },
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16.0,
+                                                vertical: 8.0),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                            ),
+                                          ),
+                                          child: const Text("Cancel"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            ShowDialogUtil.showConfirmDialog(
+                                              title: "End Booking",
+                                              message:
+                                                  "Are you sure to end this booking?",
+                                              onConfirm: () {
+                                                dailyController.deleteDailyRoom(
+                                                    booking.meetingLink);
+                                                bookingController
+                                                    .finishBooking(booking.uid);
+                                              },
+                                            );
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.green,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16.0,
+                                                vertical: 8.0),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                            ),
+                                          ),
+                                          child: const Text("Mark as Finished"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () => Get.to(
+                                            () => MeetingScreen(
+                                              roomUrl: booking.meetingLink,
+                                              userName: booking.teacher,
+                                            ),
+                                          ),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16.0,
+                                                vertical: 8.0),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                            ),
+                                          ),
+                                          child: const Text("Go to Room"),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            trailing: const Icon(Icons.calendar_today),
                           ),
-                          trailing: const Icon(Icons.calendar_today),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              }),
-            ],
+                        );
+                      },
+                    ),
+                  );
+                }),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

@@ -23,14 +23,14 @@ Future<void> main() async {
   );
 
   // Register controllers
-  Get.put(AuthController());
-  Get.put(DataController());
-  Get.put(TeacherController());
-  Get.put(StudentController());
-  Get.put(BookingController());
-  Get.put(DailyController());
-  Get.put(ThemeController());
-  Get.put(PaymentController());
+  Get.put(AuthController(), permanent: true);
+  Get.put(DataController(), permanent: true);
+  Get.put(TeacherController(), permanent: true);
+  Get.put(StudentController(), permanent: true);
+  Get.put(BookingController(), permanent: true);
+  Get.put(DailyController(), permanent: true);
+  Get.put(ThemeController(), permanent: true);
+  Get.put(PaymentController(), permanent: true);
 
   runApp(const MainApp());
 }
@@ -66,13 +66,9 @@ class AuthWrapper extends StatelessWidget {
         return LoginPage();
       }
 
-      // Ensure navigation happens only once
+      // ✅ Ensure navigation happens only once
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (Get.currentRoute != AppRoutes.studentDashboard &&
-            Get.currentRoute != AppRoutes.teacherDashboard &&
-            Get.currentRoute != AppRoutes.admin) {
-          Get.find<DataController>().checkUserAndNavigate(user.uid);
-        }
+        Get.find<DataController>().checkUserAndNavigate(user.uid);
       });
 
       return const Scaffold(body: Center(child: CircularProgressIndicator()));

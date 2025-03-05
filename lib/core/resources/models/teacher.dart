@@ -24,14 +24,14 @@ class Teacher {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
     return Teacher(
-      uid: data['uid'],
-      firstName: data['firstName'],
-      lastName: data['lastName'],
-      email: data['email'],
-      uniqueCode: data['uniqueCode'],
-      profileImage: data['profileImage'],
-      subscribedUntil: (data['subscribed_until'] as Timestamp)
-          .toDate(), // ✅ Convert Timestamp to DateTime
+      uid: data['uid'] ?? '', // ✅ Default empty string to prevent null errors
+      firstName: data['firstName'] ?? 'Unknown',
+      lastName: data['lastName'] ?? 'Unknown',
+      email: data['email'] ?? '',
+      uniqueCode: data['uniqueCode'] ?? '',
+      profileImage: data['profileImage'], // Nullable, no need for default
+      subscribedUntil: (data['subscribed_until'] as Timestamp?)?.toDate() ??
+          DateTime.now(), // ✅ Default to now if missing
     );
   }
   //fetch data from local and store to firestore

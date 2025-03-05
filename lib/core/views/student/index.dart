@@ -59,6 +59,9 @@ class _StudentIndexState extends State<StudentIndex> {
 
   @override
   Widget build(BuildContext context) {
+    if (studentController.student.value == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student Dashboard'),
