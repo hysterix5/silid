@@ -130,8 +130,8 @@ class _TeacherFormState extends State<TeacherForm> {
   }
 
   void _submitForm() async {
-    setState(() => _isLoading = true);
     try {
+      _isLoading = true;
       Teacher teacher = Teacher(
         uid: user!.uid,
         firstName: firstNameController.text,
@@ -143,8 +143,8 @@ class _TeacherFormState extends State<TeacherForm> {
       );
       await teacherController.submitTeacherData(teacher);
     } finally {
+      _isLoading = false;
       await dataController.checkUserAndNavigate(user!.uid);
-      setState(() => _isLoading = false);
     }
   }
 
@@ -301,7 +301,7 @@ class _StudentFormState extends State<StudentForm> {
     setState(() => _isLoading = true);
     try {
       String teacherCode = teacherCodeController.text.trim();
-
+      _isLoading = true;
       // Create student object
       Student student = Student(
         uid: user!.uid,
@@ -319,8 +319,8 @@ class _StudentFormState extends State<StudentForm> {
         await teacherController.assignTeacher(teacherCode, student.uid);
       }
     } finally {
+      _isLoading = false;
       await dataController.checkUserAndNavigate(user!.uid);
-      setState(() => _isLoading = false);
     }
   }
 

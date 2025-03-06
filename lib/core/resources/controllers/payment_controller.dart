@@ -1,3 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages, avoid_web_libraries_in_flutter, deprecated_member_use
+
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';

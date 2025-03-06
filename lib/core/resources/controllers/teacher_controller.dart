@@ -34,11 +34,13 @@ class TeacherController extends GetxController {
 
   Future<void> submitTeacherData(Teacher teacher) async {
     try {
+      isLoading(true);
       await _firestore
           .collection('teachers')
           .doc(teacher.uid)
           .set(teacher.toFirestore());
       this.teacher.value = teacher; // Update local state
+      isLoading(false);
     } catch (e) {
       rethrow;
     }

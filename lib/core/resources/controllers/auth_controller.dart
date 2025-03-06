@@ -20,6 +20,7 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
     _restoreUser(); // Restore user on startup
     _auth.authStateChanges().listen((User? user) {
       currentUser.value = user;

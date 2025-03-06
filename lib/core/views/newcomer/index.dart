@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:silid/core/views/newcomer/form.dart';
 
 class Newcomer extends StatelessWidget {
@@ -38,7 +37,11 @@ class Newcomer extends StatelessWidget {
                       // Teacher Option
                       InkWell(
                         onTap: () {
-                          Get.to(() => const TeacherForm());
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const TeacherForm()),
+                          );
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(
@@ -81,7 +84,11 @@ class Newcomer extends StatelessWidget {
                       // Student Option
                       InkWell(
                         onTap: () {
-                          Get.to(() => const StudentForm());
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const StudentForm()),
+                          );
                         },
                         child: Card(
                           shape: RoundedRectangleBorder(

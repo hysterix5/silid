@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:silid/core/resources/auth/login.dart';
 import 'package:silid/core/views/admin/index.dart';
+import 'package:silid/core/views/newcomer/index.dart';
 import 'package:silid/core/views/payment/cancelled.dart';
 import 'package:silid/core/views/payment/failed.dart';
 import 'package:silid/core/views/payment/success.dart';
@@ -17,12 +18,14 @@ class AppRoutes {
   static const String paymentSuccess = '/payment-success';
   static const String paymentFailed = '/payment-failed';
   static const String paymentCancelled = '/payment-cancelled';
+  static const String newcomer = '/newcomer';
   static final List<GetPage> pages = [
     GetPage(name: authWrapper, page: () => const AuthWrapper()),
     GetPage(name: login, page: () => LoginPage()),
     GetPage(name: teacherDashboard, page: () => const TeacherIndex()),
     GetPage(name: studentDashboard, page: () => const StudentIndex()),
     GetPage(name: admin, page: () => const AdminPage()),
+    GetPage(name: newcomer, page: () => const Newcomer()),
     GetPage(name: paymentSuccess, page: () => SuccessPage()),
     GetPage(name: paymentFailed, page: () => FailedPage()),
     GetPage(name: paymentCancelled, page: () => CancelledPage()),

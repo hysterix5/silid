@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:silid/core/resources/controllers/auth_controller.dart';
+import 'package:silid/core/utility/widgets/snackbar.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -30,16 +31,11 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         // Show success message or navigate after successful registration
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful!')),
-        );
-
+        SnackbarWidget.showSuccess("Registration successful!");
         // Optionally, navigate to login or home page
         Navigator.pushReplacementNamed(context, '/login');
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Registration failed: ${e.toString()}')),
-        );
+        SnackbarWidget.showError('Registration failed: ${e.toString()}');
       } finally {
         setState(() {
           _isLoading = false;
