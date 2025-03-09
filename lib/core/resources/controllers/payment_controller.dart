@@ -80,9 +80,9 @@ class PaymentController extends GetxController {
         "contact": {"email": teacher.value!.email, "phone": ""}
       },
       "redirectUrl": {
-        "success": "https://silid-b01f6.web.app/#/payment-success",
-        "failure": "https://silid-b01f6.web.app/#/payment-failed",
-        "cancel": "https://silid-b01f6.web.app/#/payment-cancelled"
+        "success": "https://silid.net/#/payment-success",
+        "failure": "https://silid.net/#/payment-failed",
+        "cancel": "https://silid.net/#/payment-cancelled"
       },
       "requestReferenceNumber": referenceNumber.value,
     };
