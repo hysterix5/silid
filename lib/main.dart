@@ -41,15 +41,25 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Silid App',
+      title: 'Silid',
       theme: AppColors.lightTheme,
       darkTheme: AppColors.darkTheme,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-
       initialRoute:
           AppRoutes.authWrapper, // Use a named route instead of `home`
-      getPages: AppRoutes.pages, // Define all routes in `app_routes.dart`
+      getPages: AppRoutes.pages,
+      // builder: (context, child) {
+      //   return Scaffold(
+      //     body: child, // Renders the current page
+      //     floatingActionButton: FloatingActionButton(
+      //       onPressed: () {
+      //         Get.toNamed('/bug-report');
+      //       },
+      //       child: Icon(Icons.bug_report),
+      //     ),
+      //   );
+      // },
     );
   }
 }

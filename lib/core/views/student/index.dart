@@ -10,6 +10,7 @@ import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/views/student/bookpage.dart';
+import 'package:silid/core/views/student/messages.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class StudentIndex extends StatefulWidget {
@@ -65,6 +66,17 @@ class _StudentIndexState extends State<StudentIndex> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Student Dashboard'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => StudentChatListScreen()),
+                );
+              },
+              icon: Icon(Icons.chat))
+        ],
       ),
       drawer: Obx(() {
         final student = studentController.student.value;
@@ -137,7 +149,10 @@ class _StudentIndexState extends State<StudentIndex> {
                                   title: "Assign Teacher",
                                   onConfirm: (teacherCode) async {
                                     await teacherController.fetchTeacherByCode(
-                                        teacherCode, student!.uid);
+                                        teacherCode,
+                                        student!.uid,
+                                        student.firstName,
+                                        student.lastName);
                                     await studentController
                                         .fetchStudentData(student.uid);
                                   },

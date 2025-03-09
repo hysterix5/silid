@@ -316,7 +316,8 @@ class _StudentFormState extends State<StudentForm> {
       );
       await studentController.submitStudentData(student);
       if (teacherCode.isNotEmpty) {
-        await teacherController.assignTeacher(teacherCode, student.uid);
+        await teacherController.assignTeacher(
+            teacherCode, student.uid, student.firstName, student.lastName);
       }
     } finally {
       _isLoading = false;

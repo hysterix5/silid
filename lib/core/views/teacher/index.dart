@@ -13,6 +13,7 @@ import 'package:silid/core/resources/models/teacher.dart';
 import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
+import 'package:silid/core/utility/widgets/notification.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
 import 'package:silid/core/views/teacher/add_schedule.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -80,9 +81,16 @@ class _TeacherIndexState extends State<TeacherIndex> {
             onPressed: () {
               initiatePayment(teacherController.teacher.value);
             },
-            icon: Icon(Icons.add_circle),
+            icon: const Icon(Icons.add_circle),
             tooltip: "Extend Subscription",
-          )
+          ),
+          AnnouncementIcon(),
+          IconButton(
+            onPressed: () {
+              Get.toNamed("/chats");
+            },
+            icon: const Icon(Icons.message),
+          ),
         ],
       ),
       drawer: Navbar(
@@ -91,6 +99,7 @@ class _TeacherIndexState extends State<TeacherIndex> {
                 .trim(),
         email: teacherController.teacher.value?.email,
         profileImageUrl: teacherController.teacher.value?.profileImage,
+        subscribedUntil: teacherController.teacher.value?.subscribedUntil,
       ),
       body: Obx(() {
         if (teacherController.isLoading.value) {
@@ -157,26 +166,45 @@ class _TeacherIndexState extends State<TeacherIndex> {
                               ],
                             ),
                             const SizedBox(height: 10),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (teacher!.subscribedUntil
-                                    .isBefore(DateTime.now())) {
-                                  SnackbarWidget.showError(
-                                      "Cannot perform this action. Your subscription has expired.");
-                                  return;
-                                } else {
-                                  Get.to(() => AddSchedulePage());
-                                }
-                              },
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.edit_calendar_outlined,
-                                      size: 24),
-                                  const SizedBox(width: 8),
-                                  const Text("Open Schedule"),
-                                ],
-                              ),
+                            Wrap(
+                              spacing: 5.0,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    if (teacher!.subscribedUntil
+                                        .isBefore(DateTime.now())) {
+                                      SnackbarWidget.showError(
+                                          "Cannot perform this action. Your subscription has expired.");
+                                      return;
+                                    } else {
+                                      Get.to(() => AddSchedulePage());
+                                    }
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.edit_calendar_outlined,
+                                          size: 24),
+                                      const SizedBox(width: 8),
+                                      const Text("Open Schedule"),
+                                    ],
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    ShowDialogUtil.showStudentsDialog(
+                                        context, teacher!.uid);
+                                  },
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.groups, size: 24),
+                                      const SizedBox(width: 8),
+                                      const Text("Your Students"),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -213,9 +241,19 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                 color: Theme.of(context).colorScheme.primary,
                                 shape: BoxShape.circle,
                               ),
+                              todayTextStyle: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onPrimary, // Ensures contrast
+                              ),
                               markerDecoration: BoxDecoration(
                                 color: Theme.of(context).colorScheme.primary,
                                 shape: BoxShape.circle,
+                              ),
+                              defaultTextStyle: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface, // Default text color
                               ),
                             ),
                           );

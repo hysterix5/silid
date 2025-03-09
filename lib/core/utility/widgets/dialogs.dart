@@ -1,3 +1,6 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -296,5 +299,188 @@ class ShowDialogUtil {
       },
       onCancel: () => Get.back(),
     );
+  }
+
+  static void showAddLessonDialog({
+    required Function() onSuccess, // Callback for UI update
+  }) {
+    TextEditingController titleController = TextEditingController();
+    TextEditingController linkController = TextEditingController();
+
+    Get.defaultDialog(
+      title: "Add New Lesson",
+      content: Column(
+        children: [
+          TextField(
+            controller: titleController,
+            decoration: const InputDecoration(
+              labelText: "Lesson Title",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 10),
+          TextField(
+            controller: linkController,
+            decoration: const InputDecoration(
+              labelText: "Lesson Link",
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.url,
+          ),
+        ],
+      ),
+      textConfirm: "Add",
+      textCancel: "Cancel",
+      confirmTextColor: Colors.white,
+      onConfirm: () async {
+        String title = titleController.text.trim();
+        String link = linkController.text.trim();
+
+        if (title.isEmpty || link.isEmpty) {
+          SnackbarWidget.showError("Please enter both title and link.");
+          return;
+        }
+
+        try {
+          await FirebaseFirestore.instance.collection('lessons').add({
+            "title": title,
+            "link": link,
+            "createdAt": FieldValue.serverTimestamp(),
+          });
+
+          onSuccess(); // Trigger UI update
+          Get.back(); // Close the dialog
+          SnackbarWidget.showSuccess("Lesson added to library!");
+        } catch (e) {
+          SnackbarWidget.showError("Error adding lesson: ${e.toString()}");
+        }
+      },
+      onCancel: () => Get.back(),
+    );
+  }
+
+  static void showAddAnnouncementDialog({required VoidCallback onSuccess}) {
+    TextEditingController creatorController = TextEditingController();
+    TextEditingController subjectController = TextEditingController();
+    TextEditingController messageController = TextEditingController();
+
+    String selectedReceiver = "All"; // Default selection
+
+    Get.defaultDialog(
+      title: "Add Announcement",
+      content: Column(
+        children: [
+          TextField(
+            controller: creatorController,
+            decoration: const InputDecoration(labelText: "Creator"),
+          ),
+          TextField(
+            controller: subjectController,
+            decoration: const InputDecoration(labelText: "Subject"),
+          ),
+          TextField(
+            controller: messageController,
+            decoration: const InputDecoration(labelText: "Message"),
+            maxLines: 3,
+          ),
+          const SizedBox(height: 10),
+          DropdownButtonFormField<String>(
+            value: selectedReceiver,
+            items: ["Students", "Teachers", "All"].map((String category) {
+              return DropdownMenuItem<String>(
+                value: category,
+                child: Text(category),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) selectedReceiver = value;
+            },
+            decoration: const InputDecoration(labelText: "Receiver"),
+          ),
+        ],
+      ),
+      textConfirm: "Add",
+      confirmTextColor: Colors.white,
+      textCancel: "Cancel",
+      onConfirm: () async {
+        if (creatorController.text.isEmpty ||
+            subjectController.text.isEmpty ||
+            messageController.text.isEmpty) {
+          SnackbarWidget.showError("All fields are required");
+          return;
+        }
+
+        await FirebaseFirestore.instance.collection('announcements').add({
+          'creator': creatorController.text,
+          'subject': subjectController.text,
+          'message': messageController.text,
+          'receiver': selectedReceiver,
+          'readBy': [],
+          'created_at': FieldValue.serverTimestamp(),
+        });
+
+        Get.back(); // Close dialog
+        onSuccess(); // Refresh UI
+      },
+    );
+  }
+
+  static void showStudentsDialog(BuildContext context, String teacherId) async {
+    try {
+      DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(teacherId)
+          .get();
+
+      if (!teacherDoc.exists) {
+        SnackbarWidget.showError("Teacher not found");
+        return;
+      }
+
+      List<dynamic> students = teacherDoc['students'] ?? [];
+
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Your Students"),
+            content: students.isEmpty
+                ? const Text("No students assigned yet.")
+                : SizedBox(
+                    width: double.maxFinite,
+                    child: SingleChildScrollView(
+                      // Ensures scrollability
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxHeight: MediaQuery.of(context).size.height *
+                              0.6, // Limits height to 60% of screen
+                        ),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: students.length,
+                          itemBuilder: (context, index) {
+                            var student = students[index];
+                            return ListTile(
+                              leading: const Icon(Icons.person),
+                              title: Text(student['name'] ?? 'Unknown'),
+                              subtitle: Text("ID: ${student['uid']}"),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Close"),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      SnackbarWidget.showError("Failed to load students: $e");
+    }
   }
 }

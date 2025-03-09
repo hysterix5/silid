@@ -10,6 +10,7 @@ class DataController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   var teachers = <Teacher>[].obs;
   var schedules = <Map<String, dynamic>>[].obs;
+  var bugReports = <Map<String, dynamic>>[].obs;
   var isLoading = true.obs;
 
   @override
@@ -134,5 +135,57 @@ class DataController extends GetxController {
     } catch (e) {
       SnackbarWidget.showError("Failed to update timeslot $e");
     }
+  }
+
+  Future<void> addAnnouncement(
+      String creator, String subject, String message) async {
+    try {
+      await FirebaseFirestore.instance.collection('announcements').add({
+        'creator': creator,
+        'subject': subject,
+        'message': message,
+        'created_at': FieldValue.serverTimestamp(),
+      });
+      SnackbarWidget.showSuccess("Announcement added successfully!");
+    } catch (e) {
+      SnackbarWidget.showError("Error adding announcement: $e");
+    }
+  }
+
+  Future<void> fetchBugReports() async {
+    try {
+      isLoading.value = true;
+
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('bug_reports')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      bugReports.value = querySnapshot.docs.map((doc) {
+        var data = doc.data() as Map<String, dynamic>;
+        return {
+          'id': doc.id,
+          'description': data['description'] ?? '',
+          'category': data['category'] ?? 'Unknown',
+          'imageUrl': data['imageUrl'], // Nullable field
+          'timestamp':
+              (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        };
+      }).toList();
+    } catch (e) {
+      SnackbarWidget.showError("Failed to fetch bug reports: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Stream<List<Map<String, dynamic>>> getMessages(String chatId) {
+    return _firestore
+        .collection("chats")
+        .doc(chatId)
+        .collection("messages")
+        .orderBy("timestamp", descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
   }
 }

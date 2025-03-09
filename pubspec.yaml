@@ -1,5 +1,5 @@
 name: silid
-description: "A new Flutter project."
+description: "Silid: A cross-platform educational booking and conference app for private tutors."
 publish_to: 'none'
 version: 0.1.0
 
@@ -15,6 +15,7 @@ dependencies:
     sdk: flutter
   flutter_icon_snackbar: ^1.2.1
   flutter_inappwebview: ^6.1.5
+  flutter_launcher_icons: ^0.14.3
   get: ^4.7.2
   go_router: ^14.8.1
   google_fonts: ^6.2.1
@@ -34,9 +35,29 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
 
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/SILID.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
+  web:
+    generate: true
+    image_path: "assets/icons/SILID.png"
+    background_color: "#FFFFFF"
+    theme_color: "#000000"
+  windows:
+    generate: true
+    image_path: "assets/icons/SILID.png"
+    icon_size: 48 # min:48, max:256, default: 48
+  macos:
+    generate: true
+    image_path: "assets/icons/SILID.png"
+
 flutter:
   uses-material-design: true
   assets:
     - assets/icons/google_icon.png
     - assets/icons/teacher.png
     - assets/icons/student.png
+    - assets/icons/SILID_transparent.png
+    - assets/icons/SILID.png

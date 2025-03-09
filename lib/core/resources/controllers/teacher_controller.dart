@@ -87,7 +87,8 @@ class TeacherController extends GetxController {
     }
   }
 
-  Future<void> fetchTeacherByCode(String teacherCode, String studentId) async {
+  Future<void> fetchTeacherByCode(String teacherCode, String studentId,
+      String studentFirstName, String studentLastName) async {
     final StudentController studentController = Get.find<StudentController>();
     try {
       isLoading(true);
@@ -115,6 +116,14 @@ class TeacherController extends GetxController {
             .update({
           'assigned_teacher': {'name': teacherName, 'uid': teacherId}
         });
+        await FirebaseFirestore.instance
+            .collection('teachers')
+            .doc(teacherId)
+            .update({
+          'students': FieldValue.arrayUnion([
+            {'name': '$studentFirstName $studentLastName', 'uid': studentId}
+          ])
+        });
         await studentController.fetchStudentData(studentId);
         Get.to(() => TeacherSchedulePage(
               teacherId: teacherId,
@@ -128,7 +137,8 @@ class TeacherController extends GetxController {
     }
   }
 
-  Future<void> assignTeacher(String teacherCode, String studentId) async {
+  Future<void> assignTeacher(String teacherCode, String studentId,
+      String studentFirstName, String studentLastName) async {
     try {
       isLoading(true);
       QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -152,6 +162,14 @@ class TeacherController extends GetxController {
             .doc(studentId) // Use student's document ID
             .update({
           'assigned_teacher': {'name': teacherName, 'uid': teacherId}
+        });
+        await FirebaseFirestore.instance
+            .collection('teachers')
+            .doc(teacherId)
+            .update({
+          'students': FieldValue.arrayUnion([
+            {'name': '$studentFirstName $studentLastName', 'uid': studentId}
+          ])
         });
       }
     } catch (e) {

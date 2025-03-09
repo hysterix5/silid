@@ -18,12 +18,14 @@ class Navbar extends StatelessWidget {
   final String? name;
   final String? email;
   final String? profileImageUrl;
+  final DateTime? subscribedUntil;
 
   const Navbar({
     super.key,
     required this.name,
     required this.email,
     required this.profileImageUrl,
+    this.subscribedUntil,
   });
 
   @override
@@ -31,55 +33,89 @@ class Navbar extends StatelessWidget {
     final ThemeController themeController = Get.find<ThemeController>();
 
     return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
         children: [
-          UserAccountsDrawerHeader(
-            accountName: Text(name!, style: const TextStyle(fontSize: 18)),
-            accountEmail: Text(email!),
-            currentAccountPicture:
-                ProfilePictureWidget(profileImg: profileImageUrl),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                UserAccountsDrawerHeader(
+                  accountName:
+                      Text(name!, style: const TextStyle(fontSize: 18)),
+                  accountEmail: Text(email!),
+                  currentAccountPicture:
+                      ProfilePictureWidget(profileImg: profileImageUrl),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.menu_book),
+                  title: const Text('Learning Materials'),
+                  onTap: () async {
+                    final Uri url = Uri.parse(
+                        'https://mfob493jyd.feishu.cn/drive/folder/fldcncxjCT7JZ0h7Tp8anSsrUwd');
+
+                    if (subscribedUntil != null &&
+                        subscribedUntil!.isBefore(DateTime.now())) {
+                      SnackbarWidget.showError(
+                          'Your Subscription has expired. Please renew.');
+                    } else {
+                      if (await canLaunchUrl(url)) {
+                        await launchUrl(url,
+                            mode: LaunchMode.externalApplication);
+                      } else {
+                        SnackbarWidget.showError('Could not launch URL');
+                      }
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.bug_report),
+                  title: const Text('Report a Bug'),
+                  onTap: () {
+                    Get.toNamed("/bug-report");
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.logout),
+                  title: const Text('Logout'),
+                  onTap: () {
+                    ShowDialogUtil.showConfirmDialog(
+                      title: "Logout",
+                      message: "Are you sure you want to log out?",
+                      onConfirm: () {
+                        Get.find<AuthController>().logOut();
+                      },
+                    );
+                  },
+                ),
+                const Divider(),
+                // Dark Mode Toggle
+                Obx(
+                  () => ListTile(
+                    leading: Icon(themeController.isDarkMode.value
+                        ? Icons.dark_mode
+                        : Icons.light_mode),
+                    title: const Text("Dark Mode"),
+                    trailing: Switch(
+                      value: themeController.isDarkMode.value,
+                      onChanged: (value) {
+                        themeController.toggleTheme();
+                      },
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.menu_book),
-            title: const Text('Learning Materials'),
-            onTap: () async {
-              final Uri url = Uri.parse(
-                  'https://mfob493jyd.feishu.cn/drive/folder/fldcncxjCT7JZ0h7Tp8anSsrUwd'); // Replace with your actual URL
-              if (await canLaunchUrl(url)) {
-                await launchUrl(url, mode: LaunchMode.externalApplication);
-              } else {
-                SnackbarWidget.showError('Could not launch URL');
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () {
-              ShowDialogUtil.showConfirmDialog(
-                title: "Logout",
-                message: "Are you sure you want to log out?",
-                onConfirm: () {
-                  Get.find<AuthController>().logOut();
-                },
-              );
-            },
-          ),
-          const Divider(),
-          // Dark Mode Toggle
-          Obx(
-            () => ListTile(
-              leading: Icon(themeController.isDarkMode.value
-                  ? Icons.dark_mode
-                  : Icons.light_mode),
-              title: const Text("Dark Mode"),
-              trailing: Switch(
-                value: themeController.isDarkMode.value,
-                onChanged: (value) {
-                  themeController.toggleTheme();
-                },
-              ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 25.0),
+            child: Image.asset(
+              "assets/icons/SILID_transparent.png",
+              height: 100,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black, // Change colors based on theme
+              colorBlendMode:
+                  BlendMode.srcIn, // Ensures color applies correctly
             ),
           ),
         ],

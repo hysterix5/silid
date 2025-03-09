@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/views/admin/annoucement.dart';
 import 'package:silid/core/views/admin/bookings_list.dart';
@@ -62,15 +63,15 @@ class _AdminPageState extends State<AdminPage> {
       });
     });
 
-    // FirebaseFirestore.instance
-    //     .collection('announcements')
-    //     .snapshots()
-    //     .listen((snapshot) {
-    //   setState(() {
-    //     announcementCount =
-    //         snapshot.docs.length; // Update booking count in real-time
-    //   });
-    // });
+    FirebaseFirestore.instance
+        .collection('announcements')
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        announcementCount =
+            snapshot.docs.length; // Update booking count in real-time
+      });
+    });
   }
 
   // Navigation method to navigate to a specific collection's page
@@ -80,7 +81,7 @@ class _AdminPageState extends State<AdminPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
+        title: const Text("Administrator Dashboard"),
       ),
       drawer: Navbar(
           name: name, email: user!.email, profileImageUrl: user!.photoURL),
@@ -92,17 +93,6 @@ class _AdminPageState extends State<AdminPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Dashboard title
-                  const Text(
-                    'Administrator Dashboard',
-                    style: TextStyle(
-                      fontSize: 28.0, // Reduced font size
-                      fontWeight: FontWeight.bold,
-                      color: Colors.blueAccent,
-                    ),
-                  ),
-                  const SizedBox(height: 25.0),
-
                   // ListView of counts for Teachers, Students, and Bookings
                   ListView(
                     shrinkWrap: true,
@@ -126,6 +116,64 @@ class _AdminPageState extends State<AdminPage> {
                             bottom: 12.0), // Spacing between tiles
                         child: InkWell(
                           onTap: () {
+                            Get.toNamed("/library");
+                          }, // On tap, navigate to collection page
+                          child: const ListTile(
+                            contentPadding:
+                                EdgeInsets.all(12.0), // Reduced padding
+                            title: Text(
+                              'Lesson Library',
+                              style: TextStyle(
+                                fontSize:
+                                    18.0, // Reduced font size for the title
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            leading: Icon(
+                              Icons.book,
+                            ), // Icon based on title
+                          ),
+                        ),
+                      ),
+                      Card(
+                        elevation: 3.0, // Slightly smaller elevation
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              8.0), // Smaller border radius
+                        ),
+                        margin: const EdgeInsets.only(
+                            bottom: 12.0), // Spacing between tiles
+                        child: InkWell(
+                          onTap: () {
+                            Get.toNamed("/reports");
+                          }, // On tap, navigate to collection page
+                          child: const ListTile(
+                            contentPadding:
+                                EdgeInsets.all(12.0), // Reduced padding
+                            title: Text(
+                              'Reports',
+                              style: TextStyle(
+                                fontSize:
+                                    18.0, // Reduced font size for the title
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            leading: Icon(
+                              Icons.bug_report,
+                            ), // Icon based on title
+                          ),
+                        ),
+                      ),
+                      Card(
+                        elevation: 3.0, // Slightly smaller elevation
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                              8.0), // Smaller border radius
+                        ),
+                        margin: const EdgeInsets.only(
+                            bottom: 12.0), // Spacing between tiles
+                        child: InkWell(
+                          onTap: () {
                             // Get.to(context, const PaymentLogs());
                           },
                           child: const ListTile(
@@ -137,12 +185,9 @@ class _AdminPageState extends State<AdminPage> {
                                 fontSize:
                                     18.0, // Reduced font size for the title
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
                               ),
                             ),
-                            leading: Icon(Icons.receipt,
-                                color:
-                                    Colors.blueAccent), // Icon based on title
+                            leading: Icon(Icons.receipt), // Icon based on title
                           ),
                         ),
                       ),
@@ -167,43 +212,12 @@ class _AdminPageState extends State<AdminPage> {
                                 fontSize:
                                     18.0, // Reduced font size for the title
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
                               ),
                             ),
-                            leading: Icon(Icons.history,
-                                color:
-                                    Colors.blueAccent), // Icon based on title
+                            leading: Icon(Icons.history), // Icon based on title
                           ),
                         ),
                       ),
-                      Card(
-                        elevation: 3.0, // Slightly smaller elevation
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                              8.0), // Smaller border radius
-                        ),
-                        margin: const EdgeInsets.only(
-                            bottom: 12.0), // Spacing between tiles
-                        child: InkWell(
-                          onTap: () {}, // On tap, navigate to collection page
-                          child: const ListTile(
-                            contentPadding:
-                                EdgeInsets.all(12.0), // Reduced padding
-                            title: Text(
-                              'Create Announcement',
-                              style: TextStyle(
-                                fontSize:
-                                    18.0, // Reduced font size for the title
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            leading: Icon(Icons.add,
-                                color:
-                                    Colors.blueAccent), // Icon based on title
-                          ),
-                        ),
-                      )
                     ],
                   ),
                 ],
@@ -237,7 +251,6 @@ class _AdminPageState extends State<AdminPage> {
             style: const TextStyle(
               fontSize: 18.0, // Reduced font size for the title
               fontWeight: FontWeight.bold,
-              color: Colors.blueAccent,
             ),
           ),
           subtitle: Text(
@@ -245,10 +258,9 @@ class _AdminPageState extends State<AdminPage> {
             style: const TextStyle(
               fontSize: 24.0, // Reduced font size for the count
               fontWeight: FontWeight.bold,
-              color: Colors.black,
             ),
           ),
-          leading: Icon(icon, color: Colors.blueAccent), // Icon based on title
+          leading: Icon(icon), // Icon based on title
         ),
       ),
     );

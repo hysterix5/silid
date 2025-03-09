@@ -61,6 +61,8 @@ class PaymentController extends GetxController {
 
     // ✅ Store teacherId & reference number in localStorage
     html.window.localStorage['teacherId'] = teacher.value!.uid;
+    html.window.localStorage['teacherFirstName'] = teacher.value!.firstName;
+    html.window.localStorage['teacherLastName'] = teacher.value!.lastName;
     referenceNumber.value = generateReferenceNumber();
     html.window.localStorage['referenceNumber'] = referenceNumber.value;
 
@@ -118,6 +120,8 @@ class PaymentController extends GetxController {
 
   Future<void> handlePayment() async {
     String? teacherId = html.window.localStorage['teacherId'];
+    String? teacherFirstName = html.window.localStorage['teacherFirstName'];
+    String? teacherLastName = html.window.localStorage['teacherLastName'];
     String? storedReference = html.window.localStorage['referenceNumber'];
 
     if (teacherId == null || storedReference == null) {
@@ -140,6 +144,7 @@ class PaymentController extends GetxController {
       } else {
         await FirebaseFirestore.instance.collection('transaction_logs').add({
           "teacherId": teacherId,
+          "teacher_name": "$teacherFirstName $teacherLastName",
           "amount": 1.00,
           "status": isSuccess ? "success" : "failed",
           "referenceNumber": storedReference,
@@ -174,6 +179,8 @@ class PaymentController extends GetxController {
 
       // ✅ Clear stored values after processing
       html.window.localStorage.remove('teacherId');
+      html.window.localStorage.remove('teacherFirstName');
+      html.window.localStorage.remove('teacherLastName');
       html.window.localStorage.remove('referenceNumber');
     }
   }
