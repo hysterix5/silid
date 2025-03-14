@@ -6,6 +6,7 @@ import 'package:silid/core/resources/controllers/auth_controller.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
 import 'package:silid/core/resources/controllers/daily_controller.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
+import 'package:silid/core/resources/controllers/event_controller.dart';
 import 'package:silid/core/resources/controllers/payment_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
@@ -31,6 +32,7 @@ Future<void> main() async {
   Get.put(DailyController(), permanent: true);
   Get.put(ThemeController(), permanent: true);
   Get.put(PaymentController(), permanent: true);
+  Get.put(EventController());
 
   runApp(const MainApp());
 }

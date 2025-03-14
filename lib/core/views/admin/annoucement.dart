@@ -57,7 +57,7 @@ class _AnnouncementsState extends State<Announcements> {
               String subject = announcement['subject'] ?? 'No Subject';
               String message = announcement['message'] ?? 'No Message';
               String receiver =
-                  announcement['receiver'] ?? 'All'; // Default to "All"
+                  announcement['recipient'] ?? 'All'; // Default to "All"
               Timestamp? timestamp = announcement['created_at'];
               String formattedDate = timestamp != null
                   ? DateFormat('yyyy-MM-dd HH:mm').format(timestamp.toDate())

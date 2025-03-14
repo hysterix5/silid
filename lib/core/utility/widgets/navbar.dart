@@ -11,8 +11,7 @@ import 'package:image_picker_web/image_picker_web.dart';
 import 'package:silid/core/resources/controllers/auth_controller.dart';
 import 'package:silid/core/utility/theme/controllers/theme_controller.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
-import 'package:silid/core/utility/widgets/snackbar.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:silid/core/views/misc/lesson.dart';
 
 class Navbar extends StatelessWidget {
   final String? name;
@@ -50,21 +49,22 @@ class Navbar extends StatelessWidget {
                   leading: const Icon(Icons.menu_book),
                   title: const Text('Learning Materials'),
                   onTap: () async {
-                    final Uri url = Uri.parse(
-                        'https://mfob493jyd.feishu.cn/drive/folder/fldcncxjCT7JZ0h7Tp8anSsrUwd');
+                    Get.to(() => LearningMaterialsPage());
+                    // final Uri url = Uri.parse(
+                    //     'https://mfob493jyd.feishu.cn/drive/folder/fldcncxjCT7JZ0h7Tp8anSsrUwd');
 
-                    if (subscribedUntil != null &&
-                        subscribedUntil!.isBefore(DateTime.now())) {
-                      SnackbarWidget.showError(
-                          'Your Subscription has expired. Please renew.');
-                    } else {
-                      if (await canLaunchUrl(url)) {
-                        await launchUrl(url,
-                            mode: LaunchMode.externalApplication);
-                      } else {
-                        SnackbarWidget.showError('Could not launch URL');
-                      }
-                    }
+                    // if (subscribedUntil != null &&
+                    //     subscribedUntil!.isBefore(DateTime.now())) {
+                    //   SnackbarWidget.showError(
+                    //       'Your Subscription has expired. Please renew.');
+                    // } else {
+                    //   if (await canLaunchUrl(url)) {
+                    //     await launchUrl(url,
+                    //         mode: LaunchMode.externalApplication);
+                    //   } else {
+                    //     SnackbarWidget.showError('Could not launch URL');
+                    //   }
+                    // }
                   },
                 ),
                 ListTile(

@@ -130,6 +130,7 @@ class _TeacherFormState extends State<TeacherForm> {
   }
 
   void _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
     try {
       _isLoading = true;
       Teacher teacher = Teacher(

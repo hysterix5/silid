@@ -4,11 +4,13 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
 import 'package:silid/core/resources/controllers/daily_controller.dart';
+import 'package:silid/core/resources/controllers/event_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
+import 'package:silid/core/utility/widgets/notification_students.dart';
 import 'package:silid/core/views/student/bookpage.dart';
 import 'package:silid/core/views/student/messages.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -24,6 +26,7 @@ class _StudentIndexState extends State<StudentIndex> {
   final StudentController studentController = Get.find<StudentController>();
   final TeacherController teacherController = Get.find<TeacherController>();
   final BookingController bookingController = Get.find<BookingController>();
+  final EventController eventController = Get.find<EventController>();
   final DailyController dailyController = Get.find<DailyController>();
 
   DateTime? selectedDay;
@@ -60,6 +63,7 @@ class _StudentIndexState extends State<StudentIndex> {
 
   @override
   Widget build(BuildContext context) {
+    final student = studentController.student.value;
     if (studentController.student.value == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -75,7 +79,8 @@ class _StudentIndexState extends State<StudentIndex> {
                       builder: (context) => StudentChatListScreen()),
                 );
               },
-              icon: Icon(Icons.chat))
+              icon: Icon(Icons.chat)),
+          StudentNotifIcon()
         ],
       ),
       drawer: Obx(() {
@@ -125,14 +130,29 @@ class _StudentIndexState extends State<StudentIndex> {
                           Obx(() {
                             final assignedTeacher =
                                 studentController.assignedTeacher;
-                            return Text(
-                              assignedTeacher['name']?.isNotEmpty == true
-                                  ? "Assigned Teacher: ${assignedTeacher['name']}"
-                                  : "No Teacher Assigned Yet",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            return Wrap(
+                              runSpacing: 5.0,
+                              crossAxisAlignment: WrapCrossAlignment.start,
+                              children: [
+                                Text(
+                                  assignedTeacher['name']?.isNotEmpty == true
+                                      ? "Assigned Teacher: ${assignedTeacher['name']}"
+                                      : "No Teacher Assigned Yet",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.stars,
+                                      color: Colors.amber,
+                                    ),
+                                    Text(assignedTeacher['credits'].toString())
+                                  ],
+                                )
+                              ],
                             );
                           }),
                           const SizedBox(height: 10),
@@ -293,15 +313,25 @@ class _StudentIndexState extends State<StudentIndex> {
                                     ElevatedButton(
                                       onPressed: () {
                                         ShowDialogUtil.showCancellationDialog(
+                                          //Cancellation
                                           title: "Cancel Booking",
                                           message:
                                               "Please provide a reason for cancellation.",
                                           onConfirm: (remarks) async {
+                                            String studentName =
+                                                "${student?.firstName} ${student?.lastName}";
                                             await dailyController
                                                 .deleteDailyRoom(
                                                     booking.meetingLink);
                                             bookingController.cancelBooking(
-                                                remarks, booking.uid);
+                                              remarks,
+                                              booking.uid,
+                                            );
+                                            eventController
+                                                .bookCancelledbyStudent(
+                                                    student?.assignedTeacher[
+                                                        'uid'],
+                                                    studentName);
                                           },
                                         );
                                       },

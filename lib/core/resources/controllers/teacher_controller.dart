@@ -11,6 +11,7 @@ import 'package:silid/core/views/student/bookpage.dart';
 class TeacherController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   Rx<Teacher?> teacher = Rx<Teacher?>(null);
+  RxList<QueryDocumentSnapshot> students = <QueryDocumentSnapshot>[].obs;
   var teachers = <Teacher>[].obs;
   var isLoading = true.obs;
 
@@ -114,15 +115,21 @@ class TeacherController extends GetxController {
             .collection('students')
             .doc(studentId) // Use student's document ID
             .update({
-          'assigned_teacher': {'name': teacherName, 'uid': teacherId}
+          'assigned_teacher': {
+            'name': teacherName,
+            'uid': teacherId,
+            'credits': 25
+          }
         });
         await FirebaseFirestore.instance
             .collection('teachers')
             .doc(teacherId)
-            .update({
-          'students': FieldValue.arrayUnion([
-            {'name': '$studentFirstName $studentLastName', 'uid': studentId}
-          ])
+            .collection("students")
+            .doc(studentId)
+            .set({
+          'name': '$studentFirstName $studentLastName',
+          'uid': studentId,
+          'credits': 25
         });
         await studentController.fetchStudentData(studentId);
         Get.to(() => TeacherSchedulePage(
@@ -161,15 +168,21 @@ class TeacherController extends GetxController {
             .collection('students')
             .doc(studentId) // Use student's document ID
             .update({
-          'assigned_teacher': {'name': teacherName, 'uid': teacherId}
+          'assigned_teacher': {
+            'name': teacherName,
+            'uid': teacherId,
+            'credits': 25
+          }
         });
         await FirebaseFirestore.instance
             .collection('teachers')
             .doc(teacherId)
-            .update({
-          'students': FieldValue.arrayUnion([
-            {'name': '$studentFirstName $studentLastName', 'uid': studentId}
-          ])
+            .collection("students")
+            .doc(studentId)
+            .set({
+          'name': '$studentFirstName $studentLastName',
+          'uid': studentId,
+          'credits': 25
         });
       }
     } catch (e) {
@@ -193,6 +206,18 @@ class TeacherController extends GetxController {
 
       // Delete each document in the subcollection
       for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+      final studentSubcollectionRef = FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(teacherUid)
+          .collection('students'); // Replace with your subcollection name
+
+      // Get all documents in the subcollection
+      final studentSnapshot = await studentSubcollectionRef.get();
+
+      // Delete each document in the subcollection
+      for (var doc in studentSnapshot.docs) {
         await doc.reference.delete();
       }
       // Then delete the teacher document itself
@@ -225,6 +250,53 @@ class TeacherController extends GetxController {
       SnackbarWidget.showError("Failed to extend subscription: $e");
     } finally {
       isLoading(false);
+    }
+  }
+
+  Future<void> fetchStudents() async {
+    if (teacher.value == null) return; // Ensure teacher data exists
+
+    Future.microtask(() => isLoading(true)); // Deferring state update
+
+    try {
+      var snapshot = await _firestore
+          .collection('teachers')
+          .doc(teacher.value!.uid)
+          .collection("students")
+          .get();
+
+      students
+          .assignAll(snapshot.docs); // Assign safely to avoid rebuild issues
+    } catch (e) {
+      debugPrint("Error fetching students: $e");
+    } finally {
+      Future.microtask(() => isLoading(false)); // Deferring state update
+    }
+  }
+
+  Future<void> updateStudentCredits(String studentId, int newCredits) async {
+    try {
+      isLoading(true); // Show loading state
+
+      // Update Firestore document
+      await _firestore
+          .collection('teachers')
+          .doc(teacher.value!.uid)
+          .collection("students")
+          .doc(studentId)
+          .update({'credits': newCredits});
+      await _firestore.collection('students').doc(studentId).update({
+        'assigned_teacher.credits': newCredits, // Update only the credits field
+      });
+
+      // Refresh the student list after update
+      await fetchStudents();
+
+      SnackbarWidget.showSuccess("Credits updated successfully");
+    } catch (e) {
+      SnackbarWidget.showError("Failed to update credits: $e");
+    } finally {
+      isLoading(false); // Hide loading state
     }
   }
 }

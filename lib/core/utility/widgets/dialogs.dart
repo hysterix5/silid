@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
 
 class ShowDialogUtil {
@@ -403,22 +404,90 @@ class ShowDialogUtil {
       confirmTextColor: Colors.white,
       textCancel: "Cancel",
       onConfirm: () async {
-        if (creatorController.text.isEmpty ||
-            subjectController.text.isEmpty ||
-            messageController.text.isEmpty) {
-          SnackbarWidget.showError("All fields are required");
-          return;
+        String creator = creatorController.text;
+        String subject = subjectController.text;
+        String message = messageController.text;
+        final announcementRef =
+            FirebaseFirestore.instance.collection('announcements');
+
+        if (creator.isNotEmpty && subject.isNotEmpty && message.isNotEmpty) {
+          try {
+            // Add to the global "announcements" collection
+            await announcementRef.add({
+              'creator': creator,
+              'subject': subject,
+              'message': message,
+              'created_at': FieldValue.serverTimestamp(),
+              'recipient': selectedReceiver
+            });
+
+            // Handle "All" recipient
+            if (selectedReceiver == 'All') {
+              // Send announcement to all teachers
+              QuerySnapshot teachersSnapshot =
+                  await FirebaseFirestore.instance.collection('teachers').get();
+              for (var teacherDoc in teachersSnapshot.docs) {
+                await teacherDoc.reference.collection('notifications').add({
+                  'creator': creator,
+                  'subject': subject,
+                  'message': message,
+                  'created_at': FieldValue.serverTimestamp(),
+                  'status': 'unread'
+                });
+              }
+
+              // Send announcement to all students
+              QuerySnapshot studentsSnapshot =
+                  await FirebaseFirestore.instance.collection('students').get();
+              for (var studentDoc in studentsSnapshot.docs) {
+                await studentDoc.reference.collection('notifications').add({
+                  'creator': creator,
+                  'subject': subject,
+                  'message': message,
+                  'created_at': FieldValue.serverTimestamp(),
+                  'status': 'unread'
+                });
+              }
+            }
+            // Handle "Teachers" recipient
+            else if (selectedReceiver == 'Teachers') {
+              QuerySnapshot teachersSnapshot =
+                  await FirebaseFirestore.instance.collection('teachers').get();
+              for (var teacherDoc in teachersSnapshot.docs) {
+                await teacherDoc.reference.collection('notifications').add({
+                  'creator': creator,
+                  'subject': subject,
+                  'message': message,
+                  'created_at': FieldValue.serverTimestamp(),
+                  'status': 'unread'
+                });
+              }
+            }
+            // Handle "Students" recipient
+            else if (selectedReceiver == 'Students') {
+              QuerySnapshot studentsSnapshot =
+                  await FirebaseFirestore.instance.collection('students').get();
+              for (var studentDoc in studentsSnapshot.docs) {
+                await studentDoc.reference.collection('notifications').add({
+                  'creator': creator,
+                  'subject': subject,
+                  'message': message,
+                  'created_at': FieldValue.serverTimestamp(),
+                  'status': 'unread'
+                });
+              }
+            }
+
+            // Show success message
+            SnackbarWidget.showSuccess('Announcement created successfully');
+          } catch (e) {
+            // Handle error during Firestore operation
+            SnackbarWidget.showError('Error: $e');
+          }
+        } else {
+          // Show a message if any of the fields are empty
+          SnackbarWidget.showError('Please fill in all fields');
         }
-
-        await FirebaseFirestore.instance.collection('announcements').add({
-          'creator': creatorController.text,
-          'subject': subjectController.text,
-          'message': messageController.text,
-          'receiver': selectedReceiver,
-          'readBy': [],
-          'created_at': FieldValue.serverTimestamp(),
-        });
-
         Get.back(); // Close dialog
         onSuccess(); // Refresh UI
       },
@@ -427,17 +496,20 @@ class ShowDialogUtil {
 
   static void showStudentsDialog(BuildContext context, String teacherId) async {
     try {
-      DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
+      QuerySnapshot studentsSnapshot = await FirebaseFirestore.instance
           .collection('teachers')
           .doc(teacherId)
-          .get();
+          .collection("students")
+          .get(); // Fetch all student documents
 
-      if (!teacherDoc.exists) {
-        SnackbarWidget.showError("Teacher not found");
+      if (studentsSnapshot.docs.isEmpty) {
+        SnackbarWidget.showError("No students assigned yet.");
         return;
       }
 
-      List<dynamic> students = teacherDoc['students'] ?? [];
+      List<Map<String, dynamic>> students = studentsSnapshot.docs
+          .map((doc) => doc.data() as Map<String, dynamic>)
+          .toList();
 
       showDialog(
         context: context,
@@ -449,11 +521,9 @@ class ShowDialogUtil {
                 : SizedBox(
                     width: double.maxFinite,
                     child: SingleChildScrollView(
-                      // Ensures scrollability
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
-                          maxHeight: MediaQuery.of(context).size.height *
-                              0.6, // Limits height to 60% of screen
+                          maxHeight: MediaQuery.of(context).size.height * 0.6,
                         ),
                         child: ListView.builder(
                           shrinkWrap: true,
@@ -482,5 +552,34 @@ class ShowDialogUtil {
     } catch (e) {
       SnackbarWidget.showError("Failed to load students: $e");
     }
+  }
+
+  static void showCreditUpdateDialog(String studentId, int currentCredits) {
+    final TeacherController teacherController = Get.put(TeacherController());
+
+    TextEditingController creditController =
+        TextEditingController(text: currentCredits.toString());
+
+    Get.defaultDialog(
+      title: "Update Credits",
+      content: TextField(
+        controller: creditController,
+        keyboardType: TextInputType.number,
+        decoration: const InputDecoration(labelText: "Enter new credits"),
+      ),
+      confirm: ElevatedButton(
+        onPressed: () {
+          int newCredits =
+              int.tryParse(creditController.text) ?? currentCredits;
+          teacherController.updateStudentCredits(studentId, newCredits);
+          Get.back(); // Close dialog
+        },
+        child: const Text("Update"),
+      ),
+      cancel: TextButton(
+        onPressed: () => Get.back(),
+        child: const Text("Cancel"),
+      ),
+    );
   }
 }

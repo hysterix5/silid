@@ -15,8 +15,8 @@ class DataController extends GetxController {
 
   @override
   void onInit() {
-    Get.put(TeacherController());
     Get.put(StudentController());
+    Get.put(TeacherController());
     super.onInit();
   }
 

@@ -7,15 +7,17 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/booking_controller.dart';
 import 'package:silid/core/resources/controllers/daily_controller.dart';
+import 'package:silid/core/resources/controllers/event_controller.dart';
 import 'package:silid/core/resources/controllers/payment_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
 import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
-import 'package:silid/core/utility/widgets/notification.dart';
+import 'package:silid/core/utility/widgets/notification_teacher.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
 import 'package:silid/core/views/teacher/add_schedule.dart';
+import 'package:silid/core/views/teacher/students_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class TeacherIndex extends StatefulWidget {
@@ -28,6 +30,8 @@ class TeacherIndex extends StatefulWidget {
 class _TeacherIndexState extends State<TeacherIndex> {
   final TeacherController teacherController = Get.find<TeacherController>();
   final BookingController bookingController = Get.find<BookingController>();
+  final EventController eventController = Get.find<EventController>();
+
   final DailyController dailyController = Get.find<DailyController>();
   final paymentController = Get.find<PaymentController>();
 
@@ -84,7 +88,7 @@ class _TeacherIndexState extends State<TeacherIndex> {
             icon: const Icon(Icons.add_circle),
             tooltip: "Extend Subscription",
           ),
-          AnnouncementIcon(),
+          TeacherNotifIcon(),
           IconButton(
             onPressed: () {
               Get.toNamed("/chats");
@@ -192,8 +196,7 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () {
-                                    ShowDialogUtil.showStudentsDialog(
-                                        context, teacher!.uid);
+                                    Get.to(() => TeacherStudentList());
                                   },
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
@@ -334,6 +337,7 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                                         booking.meetingLink);
                                                 bookingController.cancelBooking(
                                                     remarks, booking.uid);
+                                                // eventController.bookCancelledbyTeacher(teacherId, studentName)
                                               },
                                             );
                                           },

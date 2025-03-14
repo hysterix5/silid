@@ -1,24 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:silid/core/views/teacher/announcement_page.dart';
+import 'package:silid/core/views/teacher/notifications.dart';
 
-class AnnouncementIcon extends StatefulWidget {
-  const AnnouncementIcon({super.key});
+class TeacherNotifIcon extends StatefulWidget {
+  const TeacherNotifIcon({super.key});
 
   @override
-  State<AnnouncementIcon> createState() => _AnnouncementIconState();
+  State<TeacherNotifIcon> createState() => _TeacherNotifIconState();
 }
 
-class _AnnouncementIconState extends State<AnnouncementIcon> {
+class _TeacherNotifIconState extends State<TeacherNotifIcon> {
   final String currentUserId = FirebaseAuth.instance.currentUser?.uid ?? "";
+
+  Stream<QuerySnapshot> _fetchUnreadNotificationsStream() {
+    return FirebaseFirestore.instance
+        .collection("teachers")
+        .doc(currentUserId)
+        .collection("notifications")
+        .where('status', isEqualTo: 'unread')
+        .snapshots(); // Real-time updates
+  }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('announcements')
-          .where('receiver', whereIn: ['Teachers', 'All']).snapshots(),
+      stream: _fetchUnreadNotificationsStream(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
@@ -27,12 +34,7 @@ class _AnnouncementIconState extends State<AnnouncementIcon> {
           debugPrint("Firestore Error: ${snapshot.error}");
           return const Icon(Icons.error, color: Colors.red);
         }
-
-        int unreadCount = snapshot.data?.docs.where((doc) {
-              List<dynamic> readBy = doc['readBy'] ?? [];
-              return !readBy.contains(currentUserId); // ✅ Count only unread
-            }).length ??
-            0;
+        final notificationsCount = snapshot.data?.docs.length ?? 0;
 
         return Stack(
           children: [
@@ -40,15 +42,14 @@ class _AnnouncementIconState extends State<AnnouncementIcon> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const TeacherAnnouncements()),
+                  MaterialPageRoute(builder: (context) => const TeacherNotif()),
                 );
               },
               icon: const Icon(Icons.notifications),
               iconSize: 32,
               tooltip: "Notifications",
             ),
-            if (unreadCount >
+            if (notificationsCount >
                 0) // 🔥 Show badge only if there are unread announcements
               Positioned(
                 right: 5,
@@ -64,7 +65,7 @@ class _AnnouncementIconState extends State<AnnouncementIcon> {
                     minHeight: 20,
                   ),
                   child: Text(
-                    "$unreadCount", // 🔥 Only unread count
+                    "$notificationsCount", // 🔥 Only unread count
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
