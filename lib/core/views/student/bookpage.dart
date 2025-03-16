@@ -153,90 +153,105 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                             dataController
                                                                 .isLoading
                                                                 .value = true;
-
-                                                            try {
-                                                              DateTime scheduleDate = (schedule[
-                                                                          'date']
-                                                                      is Timestamp)
-                                                                  ? (schedule['date']
-                                                                          as Timestamp)
-                                                                      .toDate()
-                                                                  : (schedule[
-                                                                          'date']
-                                                                      as DateTime);
-
-                                                              String
-                                                                  timeString =
-                                                                  slot['time'];
-                                                              DateTime
-                                                                  parsedTime =
-                                                                  DateFormat(
-                                                                          "h:mm a")
-                                                                      .parse(
-                                                                          timeString);
-
-                                                              DateTime
-                                                                  mergedDateTime =
-                                                                  DateTime(
-                                                                scheduleDate
-                                                                    .year,
-                                                                scheduleDate
-                                                                    .month,
-                                                                scheduleDate
-                                                                    .day,
-                                                                parsedTime.hour,
-                                                                parsedTime
-                                                                    .minute,
-                                                              );
-
-                                                              await dataController
-                                                                  .updateTimeslotStatus(
-                                                                schedule['uid'],
-                                                                widget
-                                                                    .teacherId,
-                                                                index,
-                                                              );
-
-                                                              final String?
-                                                                  roomUrl =
-                                                                  await Get.find<
-                                                                          DailyController>()
-                                                                      .createDailyRoom();
-
-                                                              if (roomUrl !=
-                                                                  null) {
-                                                                await bookingController
-                                                                    .createBooking(
-                                                                  student:
-                                                                      "${student?.firstName ?? ''} ${student?.lastName ?? ''}"
-                                                                          .trim(),
-                                                                  teacher: widget
-                                                                      .teacherName,
-                                                                  date:
-                                                                      mergedDateTime,
-                                                                  lesson: '',
-                                                                  meetingLink:
-                                                                      roomUrl,
-                                                                );
-                                                              } else {
-                                                                SnackbarWidget
-                                                                    .showError(
-                                                                        "Failed to create meeting link.");
-                                                              }
-
-                                                              dataController
-                                                                      .isLoading
-                                                                      .value =
-                                                                  false;
-                                                            } catch (e) {
-                                                              dataController
-                                                                      .isLoading
-                                                                      .value =
-                                                                  false;
-                                                              debugPrint("$e");
+                                                            if (student?.assignedTeacher[
+                                                                    'credits'] ==
+                                                                0) {
                                                               SnackbarWidget
                                                                   .showError(
-                                                                      "Failed to book $e");
+                                                                      "Insufficient Credits");
+                                                            } else {
+                                                              try {
+                                                                DateTime scheduleDate = (schedule[
+                                                                            'date']
+                                                                        is Timestamp)
+                                                                    ? (schedule['date']
+                                                                            as Timestamp)
+                                                                        .toDate()
+                                                                    : (schedule[
+                                                                            'date']
+                                                                        as DateTime);
+
+                                                                String
+                                                                    timeString =
+                                                                    slot[
+                                                                        'time'];
+                                                                DateTime
+                                                                    parsedTime =
+                                                                    DateFormat(
+                                                                            "h:mm a")
+                                                                        .parse(
+                                                                            timeString);
+
+                                                                DateTime
+                                                                    mergedDateTime =
+                                                                    DateTime(
+                                                                  scheduleDate
+                                                                      .year,
+                                                                  scheduleDate
+                                                                      .month,
+                                                                  scheduleDate
+                                                                      .day,
+                                                                  parsedTime
+                                                                      .hour,
+                                                                  parsedTime
+                                                                      .minute,
+                                                                );
+
+                                                                await dataController
+                                                                    .updateTimeslotStatus(
+                                                                  schedule[
+                                                                      'uid'],
+                                                                  widget
+                                                                      .teacherId,
+                                                                  index,
+                                                                );
+
+                                                                final String?
+                                                                    roomUrl =
+                                                                    await Get.find<
+                                                                            DailyController>()
+                                                                        .createDailyRoom();
+
+                                                                if (roomUrl !=
+                                                                    null) {
+                                                                  await bookingController
+                                                                      .createBooking(
+                                                                    student:
+                                                                        "${student?.firstName ?? ''} ${student?.lastName ?? ''}"
+                                                                            .trim(),
+                                                                    teacher: widget
+                                                                        .teacherName,
+                                                                    date:
+                                                                        mergedDateTime,
+                                                                    lesson: '',
+                                                                    meetingLink:
+                                                                        roomUrl,
+                                                                  );
+                                                                } else {
+                                                                  SnackbarWidget
+                                                                      .showError(
+                                                                          "Failed to create meeting link.");
+                                                                }
+                                                                dataController.deductCredits(
+                                                                    widget
+                                                                        .teacherId,
+                                                                    student!
+                                                                        .uid);
+                                                                dataController
+                                                                        .isLoading
+                                                                        .value =
+                                                                    false;
+                                                              } catch (e) {
+                                                                dataController
+                                                                        .isLoading
+                                                                        .value =
+                                                                    false;
+                                                                debugPrint(
+                                                                    "$e");
+                                                                SnackbarWidget
+                                                                    .showError(
+                                                                        "Failed to book $e");
+                                                              }
                                                             }
                                                           });
                                                 },

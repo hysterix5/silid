@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
+import 'package:silid/core/utility/widgets/dialogs.dart';
 
 class StudentList extends StatelessWidget {
   final StudentController studentController = Get.put(StudentController());
@@ -35,9 +36,18 @@ class StudentList extends StatelessWidget {
                     style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Text(student.email),
                 trailing: IconButton(
-                  icon: const Icon(Icons.info),
+                  icon: const Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ),
                   onPressed: () {
-                    // Navigate or show student details
+                    ShowDialogUtil.showConfirmDialog(
+                      title: "Confirm Deletion",
+                      message: "Are you sure to delete this student?",
+                      onConfirm: () {
+                        studentController.deleteStudent(student.uid);
+                      },
+                    );
                   },
                 ),
               ),

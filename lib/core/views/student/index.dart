@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,6 +45,7 @@ class _StudentIndexState extends State<StudentIndex> {
           studentName:
               "${student?.firstName ?? ''} ${student?.lastName ?? ''}".trim(),
         );
+        studentController.fetchStudentClass(student!.uid);
       }
     });
   }
@@ -206,6 +208,73 @@ class _StudentIndexState extends State<StudentIndex> {
                         ],
                       ),
                     ),
+                    Text("You have an upcoming Group Class:"),
+                    Obx(() {
+                      if (studentController.studentClasses.isEmpty) {
+                        return const Text("No classes yet");
+                      }
+
+                      return Column(
+                        children:
+                            studentController.studentClasses.map((classData) {
+                          return Card(
+                            elevation: 4,
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text.rich(
+                                    TextSpan(
+                                      text: "Date & Time: ", // Regular text
+                                      children: [
+                                        TextSpan(
+                                          text: classData['dateTime'] != null
+                                              ? DateFormat(
+                                                      'EEEE, MMM d, yyyy • hh:mm a')
+                                                  .format((classData['dateTime']
+                                                          as Timestamp)
+                                                      .toDate())
+                                              : 'N/A',
+                                          style: const TextStyle(
+                                              fontWeight:
+                                                  FontWeight.bold), // Bold date
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Text("Teacher: ${classData['teacher']}"),
+                                  SizedBox(
+                                    height: 5.0,
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () => Get.to(
+                                      () => MeetingScreen(
+                                        roomUrl: classData['meeting_link'],
+                                        userName:
+                                            '${student?.firstName} ${student?.lastName}',
+                                      ),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16.0, vertical: 8.0),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                      ),
+                                    ),
+                                    child: const Text("Enter Class"),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }),
                     GetBuilder<BookingController>(
                       builder: (controller) {
                         return TableCalendar(

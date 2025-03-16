@@ -309,10 +309,7 @@ class _StudentFormState extends State<StudentForm> {
         firstName: firstNameController.text,
         lastName: lastNameController.text,
         email: user!.email!,
-        assignedTeacher: {
-          'name': '',
-          'uid': '',
-        },
+        assignedTeacher: {'name': '', 'uid': '', 'credits': ''},
         profileImage: '',
       );
       await studentController.submitStudentData(student);

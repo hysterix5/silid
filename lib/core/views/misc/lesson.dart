@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
+
 import 'dart:ui_web' as ui;
 import 'dart:html' as web;
 import 'package:flutter/material.dart';

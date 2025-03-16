@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,7 +17,6 @@ import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/utility/widgets/notification_teacher.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
-import 'package:silid/core/views/teacher/add_schedule.dart';
 import 'package:silid/core/views/teacher/students_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -49,6 +49,9 @@ class _TeacherIndexState extends State<TeacherIndex> {
         bookingController.fetchBookings(
           teacherName:
               "${teacher?.firstName ?? ''} ${teacher?.lastName ?? ''}".trim(),
+        );
+        teacherController.fetchTeacherClasses(
+          "${teacher?.firstName ?? ''} ${teacher?.lastName ?? ''}".trim(),
         );
       }
     });
@@ -181,7 +184,9 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                           "Cannot perform this action. Your subscription has expired.");
                                       return;
                                     } else {
-                                      Get.to(() => AddSchedulePage());
+                                      ShowDialogUtil.showClassTypeDialog(
+                                          Get.context!);
+                                      // Get.to(() => AddSchedulePage());
                                     }
                                   },
                                   child: Row(
@@ -209,6 +214,84 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                 ),
                               ],
                             ),
+                            SizedBox(
+                              height: 15.0,
+                            ),
+                            Text("You have an upcoming Group Class:"),
+                            Obx(() {
+                              if (teacherController.teacherClasses.isEmpty) {
+                                return const Text("No classes yet");
+                              }
+
+                              return Column(
+                                children: teacherController.teacherClasses
+                                    .map((classData) {
+                                  return Card(
+                                    elevation: 4,
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text.rich(
+                                            TextSpan(
+                                              text:
+                                                  "Date & Time: ", // Regular text
+                                              children: [
+                                                TextSpan(
+                                                  text: classData['dateTime'] !=
+                                                          null
+                                                      ? DateFormat(
+                                                              'EEEE, MMM d, yyyy • hh:mm a')
+                                                          .format((classData[
+                                                                      'dateTime']
+                                                                  as Timestamp)
+                                                              .toDate())
+                                                      : 'N/A',
+                                                  style: const TextStyle(
+                                                      fontWeight: FontWeight
+                                                          .bold), // Bold date
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Text(
+                                              "Students: ${classData['students']?.length ?? 0} enrolled"),
+                                          SizedBox(
+                                            height: 5.0,
+                                          ),
+                                          ElevatedButton(
+                                            onPressed: () => Get.to(
+                                              () => MeetingScreen(
+                                                roomUrl:
+                                                    classData['meeting_link'],
+                                                userName: classData['teacher'],
+                                              ),
+                                            ),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.blue,
+                                              foregroundColor: Colors.white,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16.0,
+                                                      vertical: 8.0),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                              ),
+                                            ),
+                                            child: const Text("Enter Class"),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              );
+                            })
                           ],
                         ),
                       ),

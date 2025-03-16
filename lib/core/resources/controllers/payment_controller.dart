@@ -71,7 +71,7 @@ class PaymentController extends GetxController {
 
     final Map<String, dynamic> checkoutData = {
       "totalAmount": {
-        "value": 0.01,
+        "value": 499,
         "currency": "PHP",
       },
       "buyer": {

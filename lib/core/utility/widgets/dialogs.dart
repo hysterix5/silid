@@ -6,6 +6,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
+import 'package:silid/core/views/teacher/initiate_class.dart';
+import 'package:silid/core/views/teacher/add_schedule.dart';
 
 class ShowDialogUtil {
   /// Shows an information dialog with a title and message.
@@ -580,6 +582,35 @@ class ShowDialogUtil {
         onPressed: () => Get.back(),
         child: const Text("Cancel"),
       ),
+    );
+  }
+
+  static void showClassTypeDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Choose Class Type"),
+          content: const Text(
+              "Do you want to open a schedule for Private Classes or Initiate a Group Class?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Get.to(() => AddSchedulePage());
+              },
+              child: const Text("Open Schedule"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Get.to(() => InitiateClass());
+              },
+              child: const Text("Schedule a Group Class"),
+            ),
+          ],
+        );
+      },
     );
   }
 }

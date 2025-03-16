@@ -1,13 +1,15 @@
 // Wait for Daily SDK to load before running any code
-function waitForDailySdk(callback) {
-    if (typeof window.Daily !== "undefined") {
+function waitForDailySdk(callback, retries = 10) {
+    if (window.Daily) {
+        console.log("✅ Daily SDK loaded successfully!");
         callback();
+    } else if (retries > 0) {
+        console.warn(`Daily SDK not loaded yet. Retrying... (${10 - retries})`);
+        setTimeout(() => waitForDailySdk(callback, retries - 1), 500);
     } else {
-        console.warn("Daily SDK not loaded yet. Retrying...");
-        setTimeout(() => waitForDailySdk(callback), 500);
+        console.error("❌ Failed to load Daily SDK after multiple attempts.");
     }
 }
-
 // Function to initialize the call in fullscreen
 window.initializeDaily = function (roomUrl, userName) {
     waitForDailySdk(() => {

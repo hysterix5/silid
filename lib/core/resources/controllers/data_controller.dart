@@ -35,6 +35,18 @@ class DataController extends GetxController {
           "email": user?.email,
           "name": "Test Admin",
           "uid": user?.uid,
+          "admin_permissions": true,
+        });
+
+        Get.offAllNamed('/admin');
+        return;
+      }
+      if (user?.email == "assistant@admin.com") {
+        await _firestore.collection('administrators').doc(user?.uid).set({
+          "email": user?.email,
+          "name": "Admin Assistant",
+          "uid": user?.uid,
+          "admin_permissions": false,
         });
 
         Get.offAllNamed('/admin');
@@ -102,6 +114,37 @@ class DataController extends GetxController {
       }).toList();
     } catch (e) {
       SnackbarWidget.showError("Failed to fetch schedules: $e");
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  Future<void> fetchGroupSchedules(String teacherId) async {
+    isLoading.value = true;
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(teacherId)
+          .collection('class_schedules')
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        // 🛑 No schedules found, handle accordingly (optional)
+        schedules.value = [];
+        return;
+      }
+
+      schedules.value = querySnapshot.docs.map((doc) {
+        var data = doc.data() as Map<String, dynamic>;
+        return {
+          'uid': doc.id,
+          'date': (data['date'] as Timestamp)
+              .toDate(), // ✅ Ensure proper date conversion
+          'timeslots': List.from(data['timeslots'] ?? []),
+        };
+      }).toList();
+    } catch (e) {
+      SnackbarWidget.showError("Failed to fetch class schedules: $e");
     } finally {
       isLoading.value = false;
     }
@@ -187,5 +230,45 @@ class DataController extends GetxController {
         .orderBy("timestamp", descending: true)
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
+  }
+
+  Future<void> deductCredits(String teacherId, String studentId) async {
+    final firestore = FirebaseFirestore.instance;
+
+    try {
+      // Get the current credits from the teacher's student collection
+      final teacherStudentDoc = await firestore
+          .collection('teachers')
+          .doc(teacherId)
+          .collection('students')
+          .doc(studentId)
+          .get();
+
+      if (teacherStudentDoc.exists) {
+        int currentCredits = (teacherStudentDoc.data()?['credits'] ?? 0) as int;
+        int newCredits = currentCredits - 1;
+
+        // Ensure credits don't go negative
+        if (newCredits < 0) newCredits = 0;
+
+        // Update credits in teacher's student collection
+        await firestore
+            .collection('teachers')
+            .doc(teacherId)
+            .collection('students')
+            .doc(studentId)
+            .update({'credits': newCredits});
+
+        // Update credits in the main students collection
+        await firestore
+            .collection('students')
+            .doc(studentId)
+            .update({'assigned_teacher.credits': newCredits});
+      } else {
+        SnackbarWidget.showError("Student not found in teacher's collection.");
+      }
+    } catch (e) {
+      SnackbarWidget.showError("Error deducting credits: $e");
+    }
   }
 }

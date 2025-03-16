@@ -13,6 +13,7 @@ class TeacherController extends GetxController {
   Rx<Teacher?> teacher = Rx<Teacher?>(null);
   RxList<QueryDocumentSnapshot> students = <QueryDocumentSnapshot>[].obs;
   var teachers = <Teacher>[].obs;
+  var teacherClasses = [].obs;
   var isLoading = true.obs;
 
   @override
@@ -118,7 +119,7 @@ class TeacherController extends GetxController {
           'assigned_teacher': {
             'name': teacherName,
             'uid': teacherId,
-            'credits': 25
+            'credits': 1
           }
         });
         await FirebaseFirestore.instance
@@ -129,7 +130,7 @@ class TeacherController extends GetxController {
             .set({
           'name': '$studentFirstName $studentLastName',
           'uid': studentId,
-          'credits': 25
+          'credits': 1
         });
         await studentController.fetchStudentData(studentId);
         Get.to(() => TeacherSchedulePage(
@@ -161,7 +162,8 @@ class TeacherController extends GetxController {
             querySnapshot.docs.first.data() as Map<String, dynamic>;
 
         final String teacherId = teacherData['uid'] ?? '';
-        final String teacherName = teacherData['name'] ?? 'Unknown';
+        final String teacherName =
+            '${teacherData['firstName']} ${teacherData['lastName']}';
 
         // Update student's assignedTeacher field
         await FirebaseFirestore.instance
@@ -171,7 +173,7 @@ class TeacherController extends GetxController {
           'assigned_teacher': {
             'name': teacherName,
             'uid': teacherId,
-            'credits': 25
+            'credits': 1
           }
         });
         await FirebaseFirestore.instance
@@ -182,7 +184,7 @@ class TeacherController extends GetxController {
             .set({
           'name': '$studentFirstName $studentLastName',
           'uid': studentId,
-          'credits': 25
+          'credits': 1
         });
       }
     } catch (e) {
@@ -218,6 +220,18 @@ class TeacherController extends GetxController {
 
       // Delete each document in the subcollection
       for (var doc in studentSnapshot.docs) {
+        await doc.reference.delete();
+      }
+      final notifSubcollectionRef = FirebaseFirestore.instance
+          .collection('teachers')
+          .doc(teacherUid)
+          .collection('notifications'); // Replace with your subcollection name
+
+      // Get all documents in the subcollection
+      final notifSnapshot = await notifSubcollectionRef.get();
+
+      // Delete each document in the subcollection
+      for (var doc in notifSnapshot.docs) {
         await doc.reference.delete();
       }
       // Then delete the teacher document itself
@@ -298,5 +312,17 @@ class TeacherController extends GetxController {
     } finally {
       isLoading(false); // Hide loading state
     }
+  }
+
+  void fetchTeacherClasses(String teacherName) async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection("classes")
+        .where("teacher", isEqualTo: teacherName)
+        .get();
+
+    teacherClasses.value = snapshot.docs.map((doc) => doc.data()).toList();
+    // for (var doc in snapshot.docs) {
+    //   debugPrint("Class Data: ${doc.data()}"); // Print raw document data
+    // }
   }
 }
