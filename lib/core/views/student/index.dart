@@ -10,10 +10,10 @@ import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
+import 'package:silid/core/utility/widgets/message_icon_student.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/utility/widgets/notification_students.dart';
 import 'package:silid/core/views/student/bookpage.dart';
-import 'package:silid/core/views/student/messages.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class StudentIndex extends StatefulWidget {
@@ -73,15 +73,16 @@ class _StudentIndexState extends State<StudentIndex> {
       appBar: AppBar(
         title: const Text('Student Dashboard'),
         actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => StudentChatListScreen()),
-                );
-              },
-              icon: Icon(Icons.chat)),
+          MessageIconStudent(),
+          // IconButton(
+          //     onPressed: () {
+          //       Navigator.push(
+          //         context,
+          //         MaterialPageRoute(
+          //             builder: (context) => StudentChatListScreen()),
+          //       );
+          //     },
+          //     icon: Icon(Icons.chat)),
           StudentNotifIcon()
         ],
       ),

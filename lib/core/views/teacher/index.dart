@@ -14,6 +14,7 @@ import 'package:silid/core/resources/controllers/teacher_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
 import 'package:silid/core/resources/service/daily.dart';
 import 'package:silid/core/utility/widgets/dialogs.dart';
+import 'package:silid/core/utility/widgets/message_icon_teachers.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/utility/widgets/notification_teacher.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
@@ -92,12 +93,7 @@ class _TeacherIndexState extends State<TeacherIndex> {
             tooltip: "Extend Subscription",
           ),
           TeacherNotifIcon(),
-          IconButton(
-            onPressed: () {
-              Get.toNamed("/chats");
-            },
-            icon: const Icon(Icons.message),
-          ),
+          MessageIconTeacher()
         ],
       ),
       drawer: Navbar(

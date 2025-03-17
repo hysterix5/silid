@@ -14,6 +14,10 @@ class ChatController extends GetxController {
     isLoading.value = true;
     chatId = await getOrCreateChat(otherUserId);
     fetchMessages();
+
+    // Mark messages as read
+    markMessagesAsRead();
+
     isLoading.value = false;
   }
 
@@ -60,7 +64,25 @@ class ChatController extends GetxController {
         .add({
       "senderId": senderId,
       "message": message.trim(),
+      "isRead": false,
       "timestamp": FieldValue.serverTimestamp(),
     });
+  }
+
+  void markMessagesAsRead() async {
+    String currentUserId = auth.currentUser?.uid ?? "";
+
+    QuerySnapshot unreadMessages = await _firestore
+        .collection("chats")
+        .doc(chatId)
+        .collection("messages")
+        .where("senderId",
+            isNotEqualTo: currentUserId) // Only messages from the other user
+        .where("isRead", isEqualTo: false) // Only unread messages
+        .get();
+
+    for (var doc in unreadMessages.docs) {
+      await doc.reference.update({"isRead": true}); // Mark each message as read
+    }
   }
 }

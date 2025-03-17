@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
 import 'package:silid/core/views/misc/chat.dart';
 
-class ChatListScreen extends StatelessWidget {
-  const ChatListScreen({super.key});
+class TeacherChatListScreen extends StatelessWidget {
+  const TeacherChatListScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,29 +54,85 @@ class ChatListScreen extends StatelessWidget {
                     .get(),
                 builder: (context, userSnapshot) {
                   if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
-                    return Center(child: const CircularProgressIndicator());
+                    return const SizedBox();
                   }
 
                   var userData =
                       userSnapshot.data!.data() as Map<String, dynamic>;
-                  return ListTile(
-                    title: Text(
-                        '${userData["firstName"]} ${userData["lastName"]}'),
-                    subtitle: const Text("Tap to chat"),
-                    leading: CircleAvatar(
-                      backgroundImage:
-                          NetworkImage(userData["profileImage"] ?? ""),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatScreen(
-                            otherUserId: otherUserId,
-                            otherUserName:
-                                "${userData["firstName"]} ${userData["lastName"]}",
-                          ),
+
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection("chats")
+                        .doc(chat.id) // Chat document ID
+                        .collection("messages")
+                        .where("senderId",
+                            isEqualTo:
+                                otherUserId) // Messages from the other user
+                        .where("isRead",
+                            isEqualTo: false) // Only unread messages
+                        .snapshots(),
+                    builder: (context, messageSnapshot) {
+                      int unreadCount = messageSnapshot.hasData
+                          ? messageSnapshot.data!.docs.length
+                          : 0;
+
+                      return ListTile(
+                        title: Text(
+                            '${userData["firstName"]} ${userData["lastName"]}'),
+                        subtitle: Text(unreadCount > 0
+                            ? "Unread messages: $unreadCount"
+                            : "Tap to chat"),
+                        leading: Stack(
+                          children: [
+                            CircleAvatar(
+                              backgroundImage:
+                                  NetworkImage(userData["profileImage"] ?? ""),
+                            ),
+                            if (unreadCount > 0)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    unreadCount.toString(),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 12),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(
+                                otherUserId: otherUserId,
+                                otherUserName:
+                                    "${userData["firstName"]} ${userData["lastName"]}",
+                              ),
+                            ),
+                          ).then((_) {
+                            // Mark messages as read when user opens chat
+                            FirebaseFirestore.instance
+                                .collection("chats")
+                                .doc(chat.id)
+                                .collection("messages")
+                                .where("senderId", isEqualTo: otherUserId)
+                                .where("isRead", isEqualTo: false)
+                                .get()
+                                .then((unreadMessages) {
+                              for (var doc in unreadMessages.docs) {
+                                doc.reference.update({"isRead": true});
+                              }
+                            });
+                          });
+                        },
                       );
                     },
                   );
@@ -90,46 +146,50 @@ class ChatListScreen extends StatelessWidget {
   }
 
   void _selectStudentForChat(BuildContext context, String currentUserId) async {
-    // Fetch the teacher's document to get the "students" field
-    DocumentSnapshot teacherDoc = await FirebaseFirestore.instance
-        .collection("teachers")
-        .doc(currentUserId)
-        .get();
+    try {
+      // Fetch the students subcollection under the teacher's document
+      QuerySnapshot studentsSnapshot = await FirebaseFirestore.instance
+          .collection("teachers")
+          .doc(currentUserId)
+          .collection("students") // Access the subcollection
+          .get();
 
-    List students = teacherDoc["students"] ?? [];
+      List students = studentsSnapshot.docs.map((doc) => doc.data()).toList();
 
-    if (students.isEmpty) {
-      SnackbarWidget.showError("No teachers assigned yet.");
+      if (students.isEmpty) {
+        SnackbarWidget.showError("No students assigned yet.");
+        return;
+      }
 
-      return;
-    }
-
-    // Show dialog with students list
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Select a Student"),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: SingleChildScrollView(
-              child: ListBody(
-                children: students.map((student) {
-                  return ListTile(
-                    title: Text(student["name"] ?? "Unknown"),
-                    onTap: () {
-                      Navigator.pop(context); // Close dialog
-                      _startChat(context, currentUserId, student["uid"],
-                          student["name"]);
-                    },
-                  );
-                }).toList(),
+      // Show dialog with students list
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Select a Student"),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: SingleChildScrollView(
+                child: ListBody(
+                  children: students.map((student) {
+                    return ListTile(
+                      title: Text(student["name"] ?? "Unknown"),
+                      onTap: () {
+                        _startChat(context, currentUserId, student["uid"],
+                            student["name"]);
+                        Navigator.pop(context); // Close dialog
+                      },
+                    );
+                  }).toList(),
+                ),
               ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    } catch (e) {
+      SnackbarWidget.showError("Failed to fetch students: $e");
+    }
   }
 
   void _startChat(BuildContext context, String currentUserId, String studentId,

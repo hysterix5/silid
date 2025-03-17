@@ -9,6 +9,7 @@ import 'package:silid/core/views/payment/failed.dart';
 import 'package:silid/core/views/payment/success.dart';
 import 'package:silid/core/views/misc/report.dart';
 import 'package:silid/core/views/student/index.dart';
+import 'package:silid/core/views/student/messages.dart';
 import 'package:silid/core/views/teacher/index.dart';
 import 'package:silid/core/views/teacher/messages.dart';
 import 'package:silid/main.dart';
@@ -26,7 +27,8 @@ class AppRoutes {
   static const String library = '/library';
   static const String bugReport = '/bug-report';
   static const String reportPage = '/reports';
-  static const String chatList = '/chats';
+  static const String teacherChatList = '/teacher-chats';
+  static const String studentChatList = '/student-chats';
   static final List<GetPage> pages = [
     GetPage(name: authWrapper, page: () => const AuthWrapper()),
     GetPage(name: login, page: () => LoginPage()),
@@ -40,6 +42,7 @@ class AppRoutes {
     GetPage(name: library, page: () => LessonLibrary()),
     GetPage(name: bugReport, page: () => BugReportPage()),
     GetPage(name: reportPage, page: () => BugReports()),
-    GetPage(name: chatList, page: () => ChatListScreen()),
+    GetPage(name: teacherChatList, page: () => TeacherChatListScreen()),
+    GetPage(name: studentChatList, page: () => StudentChatListScreen()),
   ];
 }

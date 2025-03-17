@@ -49,34 +49,90 @@ class StudentChatListScreen extends StatelessWidget {
 
               return FutureBuilder<DocumentSnapshot>(
                 future: FirebaseFirestore.instance
-                    .collection("teachers") // Fetching teacher details
+                    .collection("teachers")
                     .doc(otherUserId)
                     .get(),
                 builder: (context, userSnapshot) {
                   if (!userSnapshot.hasData || !userSnapshot.data!.exists) {
-                    return Center(child: const CircularProgressIndicator());
+                    return const SizedBox();
                   }
 
                   var userData =
                       userSnapshot.data!.data() as Map<String, dynamic>;
-                  return ListTile(
-                    title: Text(
-                        '${userData["firstName"]} ${userData["lastName"]}'),
-                    subtitle: const Text("Tap to chat"),
-                    leading: CircleAvatar(
-                      backgroundImage:
-                          NetworkImage(userData["profileImage"] ?? ""),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatScreen(
-                            otherUserId: otherUserId,
-                            otherUserName:
-                                "${userData["firstName"]} ${userData["lastName"]}",
-                          ),
+
+                  return StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance
+                        .collection("chats")
+                        .doc(chat.id) // Chat document ID
+                        .collection("messages")
+                        .where("senderId",
+                            isEqualTo:
+                                otherUserId) // Messages from the other user
+                        .where("isRead",
+                            isEqualTo: false) // Only unread messages
+                        .snapshots(),
+                    builder: (context, messageSnapshot) {
+                      int unreadCount = messageSnapshot.hasData
+                          ? messageSnapshot.data!.docs.length
+                          : 0;
+
+                      return ListTile(
+                        title: Text(
+                            '${userData["firstName"]} ${userData["lastName"]}'),
+                        subtitle: Text(unreadCount > 0
+                            ? "Unread messages: $unreadCount"
+                            : "Tap to chat"),
+                        leading: Stack(
+                          children: [
+                            CircleAvatar(
+                              backgroundImage:
+                                  NetworkImage(userData["profileImage"] ?? ""),
+                            ),
+                            if (unreadCount > 0)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    unreadCount.toString(),
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 12),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChatScreen(
+                                otherUserId: otherUserId,
+                                otherUserName:
+                                    "${userData["firstName"]} ${userData["lastName"]}",
+                              ),
+                            ),
+                          ).then((_) {
+                            // Mark messages as read when user opens chat
+                            FirebaseFirestore.instance
+                                .collection("chats")
+                                .doc(chat.id)
+                                .collection("messages")
+                                .where("senderId", isEqualTo: otherUserId)
+                                .where("isRead", isEqualTo: false)
+                                .get()
+                                .then((unreadMessages) {
+                              for (var doc in unreadMessages.docs) {
+                                doc.reference.update({"isRead": true});
+                              }
+                            });
+                          });
+                        },
                       );
                     },
                   );
