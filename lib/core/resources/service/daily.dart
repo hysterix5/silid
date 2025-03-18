@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'dart:js' as js;
 import 'dart:html' as html;
 
+import 'package:get/get.dart';
+import 'package:silid/core/views/misc/post_call.dart';
+
 class MeetingScreen extends StatefulWidget {
   final String roomUrl;
   final String userName;
@@ -47,16 +50,12 @@ class _MeetingScreenState extends State<MeetingScreen> {
 
   void _handleParticipantLeft() {
     debugPrint("A participant has left.");
-    if (mounted) {
-      Navigator.pop(context); // ✅ Pop the screen when user leaves
-    }
+    Get.to(() => PostCallScreen());
   }
 
   void _handleMeetingEnded() {
     debugPrint("The meeting has ended.");
-    if (mounted) {
-      Navigator.pop(context); // ✅ Pop the screen when meeting ends
-    }
+    Get.to(() => PostCallScreen());
   }
 
   @override

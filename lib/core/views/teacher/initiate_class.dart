@@ -126,14 +126,19 @@ class _InitiateClassState extends State<InitiateClass> {
 
     final String? roomUrl = await Get.find<DailyController>().createDailyRoom();
 
-    await FirebaseFirestore.instance.collection('classes').add({
+    DocumentReference classRef =
+        await FirebaseFirestore.instance.collection('classes').add({
       'teacher':
           '${teacherController.teacher.value?.firstName} ${teacherController.teacher.value?.lastName}',
       'dateTime': finalDateTime,
       'students': _selectedStudents, // Save selected students
       'meeting_link': roomUrl, // Add meeting link if needed
       'createdAt': FieldValue.serverTimestamp(),
+      'status': 'Ongoing'
     });
+
+// Now update the document to include the document ID as 'class_id'
+    await classRef.update({'class_id': classRef.id});
     SnackbarWidget.showSuccess("Class scheduled successfully!");
 
     setState(() {

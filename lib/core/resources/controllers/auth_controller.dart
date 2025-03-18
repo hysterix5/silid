@@ -1,5 +1,4 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
@@ -53,7 +52,7 @@ class AuthController extends GetxController {
             .checkUserAndNavigate(userCredential.user!.uid);
       }
     } catch (e) {
-      SnackbarWidget.showError('Sign in failed $e');
+      SnackbarWidget.showError('Invalid Sign in. Credentials does not exist');
     } finally {
       isLoading.value = false;
     }
@@ -89,8 +88,7 @@ class AuthController extends GetxController {
             .checkUserAndNavigate(userCredential.user!.uid);
       }
     } catch (e) {
-      debugPrint(e.toString());
-      SnackbarWidget.showError('Google Sign in failed $e');
+      SnackbarWidget.showError('Invalid Sign In');
     } finally {
       isSigningIn = false;
     }

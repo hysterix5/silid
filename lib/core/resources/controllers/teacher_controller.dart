@@ -325,4 +325,41 @@ class TeacherController extends GetxController {
     //   debugPrint("Class Data: ${doc.data()}"); // Print raw document data
     // }
   }
+
+  Future<void> deleteClass(String classId, String teacherName) async {
+    try {
+      isLoading(true);
+
+      // Delete class document
+      await _firestore.collection('classes').doc(classId).delete();
+
+      // Refresh class list
+      fetchTeacherClasses(teacherName);
+
+      SnackbarWidget.showSuccess("Class deleted successfully");
+    } catch (e) {
+      SnackbarWidget.showError("Failed to delete class: $e");
+    } finally {
+      isLoading(false);
+    }
+  }
+
+  Future<void> cancelClass(String classId) async {
+    try {
+      isLoading(true);
+      await FirebaseFirestore.instance
+          .collection('classes')
+          .doc(classId)
+          .update({
+        'status': 'Cancelled',
+      });
+
+      // Remove from local list if needed
+      // teacherClasses.removeWhere((classData) => classData['class_id'] == classId);
+      isLoading(false);
+      SnackbarWidget.showSuccess("Class cancelled successfully");
+    } catch (e) {
+      SnackbarWidget.showError("Failed to cancel class: $e");
+    }
+  }
 }

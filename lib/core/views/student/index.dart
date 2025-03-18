@@ -246,29 +246,31 @@ class _StudentIndexState extends State<StudentIndex> {
                                     ),
                                   ),
                                   Text("Teacher: ${classData['teacher']}"),
+                                  Text("Status: ${classData['status']}"),
                                   SizedBox(
                                     height: 5.0,
                                   ),
-                                  ElevatedButton(
-                                    onPressed: () => Get.to(
-                                      () => MeetingScreen(
-                                        roomUrl: classData['meeting_link'],
-                                        userName:
-                                            '${student?.firstName} ${student?.lastName}',
+                                  if (classData['status'] != "Cancelled")
+                                    ElevatedButton(
+                                      onPressed: () => Get.to(
+                                        () => MeetingScreen(
+                                          roomUrl: classData['meeting_link'],
+                                          userName:
+                                              '${student?.firstName} ${student?.lastName}',
+                                        ),
                                       ),
-                                    ),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.blue,
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 16.0, vertical: 8.0),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(8.0),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16.0, vertical: 8.0),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
+                                        ),
                                       ),
+                                      child: const Text("Enter Class"),
                                     ),
-                                    child: const Text("Enter Class"),
-                                  ),
                                 ],
                               ),
                             ),

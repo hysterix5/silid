@@ -76,6 +76,20 @@ class _TeacherIndexState extends State<TeacherIndex> {
     // Then start payment
   }
 
+  void _showDeleteConfirmation(String classId, String teacherName) {
+    Get.defaultDialog(
+      title: "Delete Class",
+      middleText: "Are you sure you want to delete this class?",
+      textConfirm: "Yes, Delete",
+      textCancel: "Cancel",
+      confirmTextColor: Colors.white,
+      onConfirm: () {
+        teacherController.deleteClass(classId, teacherName);
+        Get.back(); // Close the dialog
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (teacherController.teacher.value == null) {
@@ -256,31 +270,105 @@ class _TeacherIndexState extends State<TeacherIndex> {
                                           ),
                                           Text(
                                               "Students: ${classData['students']?.length ?? 0} enrolled"),
+                                          Text(
+                                              "Status: ${classData['status']}"),
                                           SizedBox(
                                             height: 5.0,
                                           ),
-                                          ElevatedButton(
-                                            onPressed: () => Get.to(
-                                              () => MeetingScreen(
-                                                roomUrl:
-                                                    classData['meeting_link'],
-                                                userName: classData['teacher'],
-                                              ),
+                                          if (classData['status'] !=
+                                              "Cancelled")
+                                            Wrap(
+                                              spacing: 5.0,
+                                              children: [
+                                                ElevatedButton(
+                                                  onPressed: () => Get.to(
+                                                    () => MeetingScreen(
+                                                      roomUrl: classData[
+                                                          'meeting_link'],
+                                                      userName:
+                                                          classData['teacher'],
+                                                    ),
+                                                  ),
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.green,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 16.0,
+                                                        vertical: 8.0),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                  ),
+                                                  child:
+                                                      const Text("Enter Class"),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    _showDeleteConfirmation(
+                                                        classData['class_id'],
+                                                        classData['teacher']);
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.blue,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 16.0,
+                                                        vertical: 8.0),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                  ),
+                                                  child:
+                                                      const Text("End Class"),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    ShowDialogUtil.showConfirmDialog(
+                                                        title:
+                                                            "Confirm Class Cancellation",
+                                                        message:
+                                                            "Are you sure to cancel this class?",
+                                                        onConfirm: () =>
+                                                            teacherController
+                                                                .cancelClass(
+                                                                    classData[
+                                                                        'class_id']));
+                                                  },
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.red,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 16.0,
+                                                        vertical: 8.0),
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              8.0),
+                                                    ),
+                                                  ),
+                                                  child: const Text(
+                                                      "Cancel Class"),
+                                                ),
+                                              ],
                                             ),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.blue,
-                                              foregroundColor: Colors.white,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16.0,
-                                                      vertical: 8.0),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                            ),
-                                            child: const Text("Enter Class"),
-                                          ),
                                         ],
                                       ),
                                     ),
