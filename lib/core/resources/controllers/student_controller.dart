@@ -7,36 +7,36 @@ class StudentController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Rx<Student?> student = Rx<Student?>(null);
-  RxMap<String, dynamic> assignedTeacher =
-      <String, dynamic>{}.obs; // 🔹 Make assignedTeacher observable
-  RxList<Student> students = <Student>[].obs;
 
+  // 🔹 Treat assignedTeacher as a list
+  RxList<Map<String, dynamic>> assignedTeacher = <Map<String, dynamic>>[].obs;
+  RxList<Student> students = <Student>[].obs;
   var studentClasses = [].obs;
   RxBool isLoading = false.obs;
 
+  // 🔹 Submit full student data
   Future<void> submitStudentData(Student student) async {
     try {
       await _firestore
           .collection('students')
           .doc(student.uid)
           .set(student.toFirestore());
-      this.student.value = student; // Update local state
-      assignedTeacher.value =
-          student.assignedTeacher; // 🔹 Update assignedTeacher
+      this.student.value = student;
+      assignedTeacher.assignAll(student.assignedTeacher);
     } catch (e) {
       rethrow;
     }
   }
 
+  // 🔹 Fetch one student
   Future<Student?> fetchStudentData(String uid) async {
     try {
       DocumentSnapshot studentDoc =
           await _firestore.collection('students').doc(uid).get();
       if (studentDoc.exists) {
         Student student = Student.fromFirestore(studentDoc);
-        this.student.value = student; // Update local state
-        assignedTeacher.value =
-            student.assignedTeacher; // 🔹 Update assignedTeacher
+        this.student.value = student;
+        assignedTeacher.assignAll(student.assignedTeacher);
         return student;
       }
       return null;
@@ -45,6 +45,7 @@ class StudentController extends GetxController {
     }
   }
 
+  // 🔹 Fetch all students
   Future<void> fetchStudents() async {
     try {
       isLoading.value = true;
@@ -59,67 +60,76 @@ class StudentController extends GetxController {
     }
   }
 
+  // 🔹 Add one teacher (preventing duplicates)
+  Future<void> addAssignedTeacher(
+      String studentUid, Map<String, dynamic> teacherData) async {
+    try {
+      await _firestore.collection('students').doc(studentUid).update({
+        'assigned_teacher': FieldValue.arrayUnion([teacherData]),
+      });
+
+      // Update local list without duplicates
+      if (!assignedTeacher.any((t) => t['uid'] == teacherData['uid'])) {
+        assignedTeacher.add(teacherData);
+      }
+
+      // Optional: update student model locally
+      if (student.value != null && student.value!.uid == studentUid) {
+        final updatedList = [...student.value!.assignedTeacher, teacherData];
+        student.value = student.value!.copyWith(assignedTeacher: updatedList);
+      }
+    } catch (e) {
+      SnackbarWidget.showError("Failed to add assigned teacher: $e");
+    }
+  }
+
+  // 🔹 Remove teacher
+  Future<void> removeAssignedTeacher(
+      String studentUid, Map<String, dynamic> teacherData) async {
+    try {
+      await _firestore.collection('students').doc(studentUid).update({
+        'assigned_teacher': FieldValue.arrayRemove([teacherData]),
+      });
+      assignedTeacher.removeWhere((t) => t['uid'] == teacherData['uid']);
+    } catch (e) {
+      SnackbarWidget.showError("Failed to remove teacher: $e");
+    }
+  }
+
+  // 🔹 Delete student (and subcollection)
   Future<void> deleteStudent(String studentUid) async {
     try {
       isLoading(true);
-      // First, delete all documents in the subcollection (e.g., 'teacher_subcollection')
-      final subcollectionRef = FirebaseFirestore.instance
+      final subcollectionRef = _firestore
           .collection('students')
           .doc(studentUid)
-          .collection('notifications'); // Replace with your subcollection name
+          .collection('notifications');
 
-      // Get all documents in the subcollection
       final snapshot = await subcollectionRef.get();
-
-      // Delete each document in the subcollection
       for (var doc in snapshot.docs) {
         await doc.reference.delete();
       }
 
-      // Then delete the teacher document itself
-      await FirebaseFirestore.instance
-          .collection('students')
-          .doc(studentUid)
-          .delete();
+      await _firestore.collection('students').doc(studentUid).delete();
       students.removeWhere((student) => student.uid == studentUid);
 
       SnackbarWidget.showSuccess("Student deletion successful");
     } catch (e) {
-      SnackbarWidget.showSuccess('Error deleting Student: $e');
+      SnackbarWidget.showError('Error deleting Student: $e');
     } finally {
       isLoading(false);
     }
   }
 
-  // 🔹 Update Assigned Teacher
-  void updateAssignedTeacher(Map<String, dynamic> teacherData) async {
-    if (student.value != null) {
-      await _firestore.collection('students').doc(student.value!.uid).update({
-        'assigned_teacher': teacherData,
-      });
-      assignedTeacher.value =
-          teacherData; // 🔹 Update observable assignedTeacher
-    }
-  }
-
+  // 🔹 Fetch classes this student is enrolled in
   void fetchStudentClass(String studentUid) async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection("classes")
-        .get(); // Get all documents
-
-    // Filter the documents where the student UID exists in the students list
+    final snapshot = await _firestore.collection("classes").get();
     final filteredDocs = snapshot.docs.where((doc) {
-      final data = doc.data();
-      final studentsList =
-          data['students'] as List<dynamic>?; // Get students array
-
-      if (studentsList == null) return false; // If no students, skip
-
-      // Check if any student in the list has a matching UID
+      final studentsList = doc.data()['students'] as List<dynamic>?;
+      if (studentsList == null) return false;
       return studentsList.any((student) => student['uid'] == studentUid);
     }).toList();
 
-    // Convert the filtered documents into a usable list
     studentClasses.value = filteredDocs.map((doc) => doc.data()).toList();
   }
 }

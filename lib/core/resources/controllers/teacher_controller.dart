@@ -6,7 +6,6 @@ import 'package:silid/core/resources/controllers/auth_controller.dart';
 import 'package:silid/core/resources/controllers/student_controller.dart';
 import 'package:silid/core/resources/models/teacher.dart';
 import 'package:silid/core/utility/widgets/snackbar.dart';
-import 'package:silid/core/views/student/bookpage.dart';
 
 class TeacherController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -89,106 +88,158 @@ class TeacherController extends GetxController {
     }
   }
 
-  Future<void> fetchTeacherByCode(String teacherCode, String studentId,
-      String studentFirstName, String studentLastName) async {
+/* ────────────────────────────────────────────────────────────────
+ *  Add a teacher to a student by code  ➜  supports MULTIPLE teachers
+ * ──────────────────────────────────────────────────────────────── */
+  Future<void> fetchTeacherByCode(
+    String teacherCode,
+    String studentId,
+    String studentFirstName,
+    String studentLastName,
+  ) async {
     final StudentController studentController = Get.find<StudentController>();
+
     try {
       isLoading(true);
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+
+      // Find teacher by code
+      final query = await _firestore
           .collection('teachers')
           .where('uniqueCode', isEqualTo: teacherCode)
           .get();
 
-      if (querySnapshot.docs.isEmpty) {
-        debugPrint("Code Invalid");
-      } else {
-        // Get teacher data safely
-        var teacherData =
-            querySnapshot.docs.first.data() as Map<String, dynamic>;
-
-        final String teacherId = teacherData['uid'] ?? '';
-        final String teacherName =
-            "${teacherData['firstName'] ?? ''} ${teacherData['lastName'] ?? 'Unknown'}"
-                .trim();
-
-        // Update student's assignedTeacher field
-        await FirebaseFirestore.instance
-            .collection('students')
-            .doc(studentId) // Use student's document ID
-            .update({
-          'assigned_teacher': {
-            'name': teacherName,
-            'uid': teacherId,
-            'credits': 1
-          }
-        });
-        await FirebaseFirestore.instance
-            .collection('teachers')
-            .doc(teacherId)
-            .collection("students")
-            .doc(studentId)
-            .set({
-          'name': '$studentFirstName $studentLastName',
-          'uid': studentId,
-          'credits': 1
-        });
-        await studentController.fetchStudentData(studentId);
-        Get.to(() => TeacherSchedulePage(
-              teacherId: teacherId,
-              teacherName: teacherName,
-            ));
+      if (query.docs.isEmpty) {
+        SnackbarWidget.showError("Invalid code");
+        return;
       }
+
+      final data = query.docs.first.data();
+      final String teacherId = data['uid'];
+      final String teacherName =
+          "${data['firstName']} ${data['lastName']}".trim();
+
+      /* 👇 1.  PUSH the teacher map into the student's array (no duplicates) */
+      await _firestore.collection('students').doc(studentId).update({
+        'assigned_teacher': FieldValue.arrayUnion([
+          {'name': teacherName, 'uid': teacherId, 'credits': 1}
+        ]),
+      });
+
+      /* 👇 2.  Add the student under the teacher’s own sub‑collection */
+      await _firestore
+          .collection('teachers')
+          .doc(teacherId)
+          .collection('students')
+          .doc(studentId)
+          .set({
+        'name': '$studentFirstName $studentLastName',
+        'uid': studentId,
+        'credits': 1,
+      });
+
+      /* 👇 3.  Refresh local student state */
+      await studentController.fetchStudentData(studentId);
+
+      // Get.to(
+      //   () => TeacherSchedulePage(
+      //     teacherId: teacherId,
+      //     teacherName: teacherName,
+      //     assignedTeacher: const {}, // kept for page argument
+      //   ),
+      // );
     } catch (e) {
-      SnackbarWidget.showError("Error fetching/updating teacher: $e");
+      SnackbarWidget.showError("Error linking teacher: $e");
     } finally {
       isLoading(false);
     }
   }
 
-  Future<void> assignTeacher(String teacherCode, String studentId,
-      String studentFirstName, String studentLastName) async {
+/* ────────────────────────────────────────────────────────────────
+ *  Simple helper used by Admin to assign a teacher (same logic)
+ * ──────────────────────────────────────────────────────────────── */
+  Future<void> assignTeacher(
+    String teacherCode,
+    String studentId,
+    String studentFirstName,
+    String studentLastName,
+  ) async {
     try {
       isLoading(true);
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+
+      final query = await _firestore
           .collection('teachers')
           .where('uniqueCode', isEqualTo: teacherCode)
           .get();
 
-      if (querySnapshot.docs.isEmpty) {
-        debugPrint("Code Invalid");
-      } else {
-        // Get teacher data safely
-        var teacherData =
-            querySnapshot.docs.first.data() as Map<String, dynamic>;
-
-        final String teacherId = teacherData['uid'] ?? '';
-        final String teacherName =
-            '${teacherData['firstName']} ${teacherData['lastName']}';
-
-        // Update student's assignedTeacher field
-        await FirebaseFirestore.instance
-            .collection('students')
-            .doc(studentId) // Use student's document ID
-            .update({
-          'assigned_teacher': {
-            'name': teacherName,
-            'uid': teacherId,
-            'credits': 1
-          }
-        });
-        await FirebaseFirestore.instance
-            .collection('teachers')
-            .doc(teacherId)
-            .collection("students")
-            .doc(studentId)
-            .set({
-          'name': '$studentFirstName $studentLastName',
-          'uid': studentId,
-          'credits': 1
-        });
+      if (query.docs.isEmpty) {
+        SnackbarWidget.showError("Invalid code");
+        return;
       }
+
+      final data = query.docs.first.data();
+      final String teacherId = data['uid'];
+      final String teacherName =
+          "${data['firstName']} ${data['lastName']}".trim();
+
+      await _firestore.collection('students').doc(studentId).update({
+        'assigned_teacher': FieldValue.arrayUnion([
+          {'name': teacherName, 'uid': teacherId, 'credits': 1}
+        ]),
+      });
+
+      await _firestore
+          .collection('teachers')
+          .doc(teacherId)
+          .collection('students')
+          .doc(studentId)
+          .set({
+        'name': '$studentFirstName $studentLastName',
+        'uid': studentId,
+        'credits': 1,
+      });
     } catch (e) {
-      SnackbarWidget.showError("Error fetching/updating teacher: $e");
+      SnackbarWidget.showError("Error assigning teacher: $e");
+    } finally {
+      isLoading(false);
+    }
+  }
+
+/* ────────────────────────────────────────────────────────────────
+ *  Update credits for *this* teacher in the student's teacher list
+ * ──────────────────────────────────────────────────────────────── */
+  Future<void> updateStudentCredits(String studentId, int newCredits) async {
+    try {
+      isLoading(true);
+
+      /* 1️⃣  Update credits in teacher → students sub‑collection */
+      await _firestore
+          .collection('teachers')
+          .doc(teacher.value!.uid)
+          .collection('students')
+          .doc(studentId)
+          .update({'credits': newCredits});
+
+      /* 2️⃣  Pull the student's teacher list, update the matching entry */
+      final studentRef = _firestore.collection('students').doc(studentId);
+      final snap = await studentRef.get();
+
+      if (snap.exists) {
+        final List list = List.from(snap['assigned_teacher'] ?? []);
+
+        for (final item in list) {
+          if (item is Map && item['uid'] == teacher.value!.uid) {
+            item['credits'] = newCredits;
+            break;
+          }
+        }
+
+        await studentRef.update({'assigned_teacher': list});
+      }
+
+      SnackbarWidget.showSuccess("Credits updated");
+      await fetchStudents(); // refresh sidebar
+    } catch (e) {
+      SnackbarWidget.showError("Failed to update credits: $e");
     } finally {
       isLoading(false);
     }
@@ -288,31 +339,31 @@ class TeacherController extends GetxController {
     }
   }
 
-  Future<void> updateStudentCredits(String studentId, int newCredits) async {
-    try {
-      isLoading(true); // Show loading state
+  // Future<void> updateStudentCredits(String studentId, int newCredits) async {
+  //   try {
+  //     isLoading(true); // Show loading state
 
-      // Update Firestore document
-      await _firestore
-          .collection('teachers')
-          .doc(teacher.value!.uid)
-          .collection("students")
-          .doc(studentId)
-          .update({'credits': newCredits});
-      await _firestore.collection('students').doc(studentId).update({
-        'assigned_teacher.credits': newCredits, // Update only the credits field
-      });
+  //     // Update Firestore document
+  //     await _firestore
+  //         .collection('teachers')
+  //         .doc(teacher.value!.uid)
+  //         .collection("students")
+  //         .doc(studentId)
+  //         .update({'credits': newCredits});
+  //     await _firestore.collection('students').doc(studentId).update({
+  //       'assigned_teacher.credits': newCredits, // Update only the credits field
+  //     });
 
-      // Refresh the student list after update
-      await fetchStudents();
+  //     // Refresh the student list after update
+  //     await fetchStudents();
 
-      SnackbarWidget.showSuccess("Credits updated successfully");
-    } catch (e) {
-      SnackbarWidget.showError("Failed to update credits: $e");
-    } finally {
-      isLoading(false); // Hide loading state
-    }
-  }
+  //     SnackbarWidget.showSuccess("Credits updated successfully");
+  //   } catch (e) {
+  //     SnackbarWidget.showError("Failed to update credits: $e");
+  //   } finally {
+  //     isLoading(false); // Hide loading state
+  //   }
+  // }
 
   void fetchTeacherClasses(String teacherName) async {
     final snapshot = await FirebaseFirestore.instance

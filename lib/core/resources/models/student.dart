@@ -7,7 +7,7 @@ class Student {
   final String firstName;
   final String lastName;
   final String email;
-  final Map<String, dynamic> assignedTeacher;
+  final List<Map<String, dynamic>> assignedTeacher;
   final String? profileImage;
 
   Student({
@@ -15,22 +15,25 @@ class Student {
     required this.firstName,
     required this.lastName,
     required this.email,
-    required this.assignedTeacher,
-    required this.profileImage,
+    this.assignedTeacher = const [], // default empty list
+    this.profileImage,
   });
-  //fetch data from firestore and store to local model
+
   factory Student.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    final data = doc.data() as Map<String, dynamic>;
+
     return Student(
       uid: data['uid'],
       firstName: data['firstName'],
       lastName: data['lastName'],
       email: data['email'],
-      assignedTeacher: data['assigned_teacher'],
+      assignedTeacher: List<Map<String, dynamic>>.from(
+        data['assigned_teacher'] ?? [],
+      ),
       profileImage: data['profileImage'],
     );
   }
-  //fetch data from local and store to firestore
+
   Map<String, dynamic> toFirestore() {
     return {
       'uid': uid,
@@ -40,5 +43,23 @@ class Student {
       'assigned_teacher': assignedTeacher,
       'profileImage': profileImage,
     };
+  }
+
+  Student copyWith({
+    String? uid,
+    String? firstName,
+    String? lastName,
+    String? email,
+    List<Map<String, dynamic>>? assignedTeacher,
+    String? profileImage,
+  }) {
+    return Student(
+      uid: uid ?? this.uid,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      assignedTeacher: assignedTeacher ?? this.assignedTeacher,
+      profileImage: profileImage ?? this.profileImage,
+    );
   }
 }

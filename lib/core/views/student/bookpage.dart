@@ -11,11 +11,12 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:silid/core/resources/controllers/data_controller.dart';
 
 class TeacherSchedulePage extends StatefulWidget {
-  final String teacherId;
-  final String teacherName;
+  final Map teacherData;
 
-  const TeacherSchedulePage(
-      {super.key, required this.teacherId, required this.teacherName});
+  const TeacherSchedulePage({
+    super.key,
+    required this.teacherData,
+  });
 
   @override
   State<TeacherSchedulePage> createState() => _TeacherSchedulePageState();
@@ -32,7 +33,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      dataController.fetchSchedules(widget.teacherId);
+      dataController.fetchSchedules(widget.teacherData['uid']);
     });
   }
 
@@ -55,7 +56,9 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
   @override
   Widget build(BuildContext context) {
     final student = studentController.student.value;
-    String teacherName = widget.teacherName;
+    String teacherName = widget.teacherData['name'] ??
+        widget.teacherData['firstName'] ??
+        'Unknown Teacher';
     return Scaffold(
       appBar: AppBar(title: Text("$teacherName's Schedule")),
       body: Obx(() {
@@ -153,7 +156,7 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                             dataController
                                                                 .isLoading
                                                                 .value = true;
-                                                            if (student?.assignedTeacher[
+                                                            if (widget.teacherData[
                                                                     'credits'] ==
                                                                 0) {
                                                               SnackbarWidget
@@ -201,8 +204,8 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                                     .updateTimeslotStatus(
                                                                   schedule[
                                                                       'uid'],
-                                                                  widget
-                                                                      .teacherId,
+                                                                  widget.teacherData[
+                                                                      'uid'],
                                                                   index,
                                                                 );
 
@@ -220,7 +223,8 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                                         "${student?.firstName ?? ''} ${student?.lastName ?? ''}"
                                                                             .trim(),
                                                                     teacher: widget
-                                                                        .teacherName,
+                                                                            .teacherData[
+                                                                        'name'],
                                                                     date:
                                                                         mergedDateTime,
                                                                     lesson: '',
@@ -232,11 +236,12 @@ class _TeacherSchedulePageState extends State<TeacherSchedulePage> {
                                                                       .showError(
                                                                           "Failed to create meeting link.");
                                                                 }
-                                                                dataController.deductCredits(
-                                                                    widget
-                                                                        .teacherId,
-                                                                    student!
-                                                                        .uid);
+                                                                dataController
+                                                                    .deductCredits(
+                                                                        widget.teacherData[
+                                                                            'uid'],
+                                                                        student!
+                                                                            .uid);
                                                                 dataController
                                                                         .isLoading
                                                                         .value =

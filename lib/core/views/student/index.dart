@@ -13,7 +13,7 @@ import 'package:silid/core/utility/widgets/dialogs.dart';
 import 'package:silid/core/utility/widgets/message_icon_student.dart';
 import 'package:silid/core/utility/widgets/navbar.dart';
 import 'package:silid/core/utility/widgets/notification_students.dart';
-import 'package:silid/core/views/student/bookpage.dart';
+import 'package:silid/core/views/student/teacher_list.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class StudentIndex extends StatefulWidget {
@@ -128,43 +128,13 @@ class _StudentIndexState extends State<StudentIndex> {
                             ),
                           ),
                           const SizedBox(height: 20),
-
-                          // Display Teacher's Name
-                          Obx(() {
-                            final assignedTeacher =
-                                studentController.assignedTeacher;
-                            return Wrap(
-                              runSpacing: 5.0,
-                              crossAxisAlignment: WrapCrossAlignment.start,
-                              children: [
-                                Text(
-                                  assignedTeacher['name']?.isNotEmpty == true
-                                      ? "Assigned Teacher: ${assignedTeacher['name']}"
-                                      : "No Teacher Assigned Yet",
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.stars,
-                                      color: Colors.amber,
-                                    ),
-                                    Text(assignedTeacher['credits'].toString())
-                                  ],
-                                )
-                              ],
-                            );
-                          }),
                           const SizedBox(height: 10),
                           ElevatedButton(
                             onPressed: () async {
                               final student = studentController.student.value;
 
                               if (student == null ||
-                                  student.assignedTeacher['name'] == '') {
+                                  student.assignedTeacher.isEmpty) {
                                 debugPrint("No teacher assigned");
 
                                 // Show dialog to enter teacher code
@@ -181,11 +151,14 @@ class _StudentIndexState extends State<StudentIndex> {
                                   },
                                 );
                               } else {
-                                Get.to(() => TeacherSchedulePage(
-                                      teacherId: student.assignedTeacher['uid'],
-                                      teacherName:
-                                          student.assignedTeacher['name'],
-                                    ));
+                                Get.to(() => SubscribedTeacherList(
+                                    studentId: student.uid));
+
+                                // Get.to(() => TeacherSchedulePage(
+                                //       teacherId: student.assignedTeacher[0]['uid'],
+                                //       teacherName:
+                                //           student.assignedTeacher[0]['name'],
+                                //     ));
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -401,9 +374,10 @@ class _StudentIndexState extends State<StudentIndex> {
                                             );
                                             eventController
                                                 .bookCancelledbyStudent(
-                                                    student?.assignedTeacher[
-                                                        'uid'],
-                                                    studentName);
+                                              student?.assignedTeacher
+                                                  .first['uid'],
+                                              studentName,
+                                            );
                                           },
                                         );
                                       },

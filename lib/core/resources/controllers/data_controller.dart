@@ -244,29 +244,51 @@ class DataController extends GetxController {
           .doc(studentId)
           .get();
 
-      if (teacherStudentDoc.exists) {
-        int currentCredits = (teacherStudentDoc.data()?['credits'] ?? 0) as int;
-        int newCredits = currentCredits - 1;
-
-        // Ensure credits don't go negative
-        if (newCredits < 0) newCredits = 0;
-
-        // Update credits in teacher's student collection
-        await firestore
-            .collection('teachers')
-            .doc(teacherId)
-            .collection('students')
-            .doc(studentId)
-            .update({'credits': newCredits});
-
-        // Update credits in the main students collection
-        await firestore
-            .collection('students')
-            .doc(studentId)
-            .update({'assigned_teacher.credits': newCredits});
-      } else {
+      if (!teacherStudentDoc.exists) {
         SnackbarWidget.showError("Student not found in teacher's collection.");
+        return;
       }
+
+      int currentCredits = (teacherStudentDoc.data()?['credits'] ?? 0) as int;
+      int newCredits = (currentCredits - 1).clamp(0, currentCredits);
+
+      // Update the credits in the teacher's student subcollection
+      await firestore
+          .collection('teachers')
+          .doc(teacherId)
+          .collection('students')
+          .doc(studentId)
+          .update({'credits': newCredits});
+
+      // Fetch current assigned_teacher list from student
+      final studentDoc =
+          await firestore.collection('students').doc(studentId).get();
+
+      if (!studentDoc.exists) {
+        SnackbarWidget.showError("Student not found.");
+        return;
+      }
+
+      final data = studentDoc.data()!;
+      final List assigned = data['assigned_teacher'];
+
+      // Type safety: ensure we have a list of maps
+      final List<Map<String, dynamic>> assignedTeachers =
+          List<Map<String, dynamic>>.from(assigned);
+
+      // Update the matching teacher's credits
+      for (var teacher in assignedTeachers) {
+        if (teacher['uid'] == teacherId) {
+          teacher['credits'] = newCredits;
+          break;
+        }
+      }
+
+      // Save the updated list back
+      await firestore
+          .collection('students')
+          .doc(studentId)
+          .update({'assigned_teacher': assignedTeachers});
     } catch (e) {
       SnackbarWidget.showError("Error deducting credits: $e");
     }

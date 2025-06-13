@@ -87,8 +87,6 @@ class AuthController extends GetxController {
         Get.find<DataController>()
             .checkUserAndNavigate(userCredential.user!.uid);
       }
-    } catch (e) {
-      SnackbarWidget.showError('Invalid Sign In');
     } finally {
       isSigningIn = false;
     }

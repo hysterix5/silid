@@ -38,7 +38,7 @@
     "headers": [
       {
         "key": "Content-Security-Policy",
-        "value": "default-src *; script-src 'self' 'unsafe-inline' 'unsafe-eval' *; connect-src *; img-src *; style-src 'self' 'unsafe-inline' *; font-src *; frame-src 'self' https://www.youtube.com https://www.gstatic.com https://*.googleusercontent.com https://silid.daily.co https://silid.net; child-src 'self' https://www.youtube.com; frame-ancestors 'self' https://silid.net;"
+        "value": "default-src *; script-src 'self' 'unsafe-inline' 'unsafe-eval' *; connect-src *; img-src *; style-src 'self' 'unsafe-inline' *; font-src *; frame-src 'self' https://www.youtube.com https://www.gstatic.com https://*.googleusercontent.com https://silid.daily.co https://silid.net https://mfob493jyd.feishu.cn/; child-src 'self' https://www.youtube.com https://mfob493jyd.feishu.cn/; frame-ancestors 'self' https://silid.net https://mfob493jyd.feishu.cn/;"
       }
     ]
   }
